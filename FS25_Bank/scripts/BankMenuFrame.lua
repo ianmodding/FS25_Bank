@@ -189,15 +189,21 @@ function BankMenuFrame:initialize()
         disabled = true,
         callback = function() self:onClickPayoffSelected() end
     }
+    self.btnFormBorrow = {
+        text = g_i18n:getText("bank_borrow"),
+        inputAction = InputAction.MENU_ACTIVATE,
+        disabled = true,
+        callback = function() self:onClickBorrow() end
+    }
     self.btnFormBack = {
-        text = g_i18n:getText("bank_back"),
+        text = g_i18n:getText("bank_modal_close"),
         inputAction = InputAction.MENU_BACK,
         callback = function() self:onClickBackToDashboard() end
     }
     self.menuButtonInfoByView = {
         active = {self.btnBack, self.btnNewLoan, self.btnPayoff},
         closed = {self.btnBack, self.btnNewLoan},
-        loanForm = {self.btnFormBack}
+        loanForm = {self.btnFormBorrow, self.btnFormBack}
     }
 end
 
@@ -351,6 +357,7 @@ function BankMenuFrame:refreshDashboard()
     self:setTextOf("dashRateValue", string.format("%.2f%% →", rate * 100))
     self:setTextOf("scoreText", string.format("%d/%d", score, BankManager.SCORE_MAX))
     self:setTextOf("scoreTierText", g_i18n:getText(tierKey))
+    self:updateProgressBar("scoreProgressFill", "scoreProgressTrack", scoreRatio)
 
     self:setTextOf("amountText", fmt(self.amount))
     if bm:hasOverdue(farmId) then
@@ -376,6 +383,9 @@ function BankMenuFrame:refreshDashboard()
     end
 
     self:setDisabledOf("borrowButton", not canBorrow)
+    if self.btnFormBorrow ~= nil then
+        self.btnFormBorrow.disabled = not canBorrow
+    end
     self:setDisabledOf("amountDownBtn", self.amount <= BankManager.MIN_AMOUNT)
     self:setDisabledOf("amountUpBtn", self.amount >= math.min(BankManager.MAX_AMOUNT, maxAllowed))
 
@@ -467,15 +477,12 @@ function BankMenuFrame:updateSubCategoryPages()
 end
 
 function BankMenuFrame:updateViewVisibility()
-    local showDashboard = self.currentView == "dashboard"
-    self:setVisibleOf("subCategoryBox", showDashboard)
-    self:setVisibleOf("subCategoryPaging", showDashboard)
-    self:setVisibleOf("dashboardTopSeparator", showDashboard)
-    self:setVisibleOf("dashboardStrip", showDashboard)
-    self:setVisibleOf("loanFormView", not showDashboard)
+    local showModal = self.currentView == "loanForm"
+    self:setVisibleOf("loanModalBackdrop", showModal)
+    self:setVisibleOf("loanFormView", showModal)
 
     for index, page in pairs(self.subCategoryPages or {}) do
-        page:setVisible(showDashboard and index == self.currentTab)
+        page:setVisible(index == self.currentTab)
     end
     self:updateSliderVisibility()
 end
@@ -495,9 +502,23 @@ function BankMenuFrame:updateButtonStates()
     if self.btnPayoff == nil then
         return
     end
-    self.btnPayoff.disabled = self.currentView ~= "dashboard"
-        or self.currentTab ~= BankMenuFrame.TAB.ACTIVE
-        or self.selectedLoan == nil
+    local canPayoff = self.currentView == "dashboard"
+        and self.currentTab == BankMenuFrame.TAB.ACTIVE
+        and self.selectedLoan ~= nil
+    self.btnPayoff.disabled = not canPayoff
+    self:setDisabledOf("payoffSelectedButton", not canPayoff)
+    self:setVisibleOf("payoffActionBar",
+        self.currentView == "dashboard"
+        and self.currentTab == BankMenuFrame.TAB.ACTIVE
+        and #self.loansList > 0)
+    if canPayoff then
+        self:setTextOf("payoffSelectionText", string.format(
+            g_i18n:getText("bank_payoff_selected"),
+            BankManager.formatMoney(self.selectedLoan.remaining or 0)
+        ))
+    else
+        self:setTextOf("payoffSelectionText", g_i18n:getText("bank_select_loan_to_payoff"))
+    end
     if self.setMenuButtonInfoDirty ~= nil then
         self:setMenuButtonInfoDirty()
     end
@@ -606,7 +627,10 @@ function BankMenuFrame:populateCellForItemInSection(list, section, index, cell)
 end
 
 function BankMenuFrame:onListSelectionChanged(list, section, index)
-    if self.currentTab == BankMenuFrame.TAB.ACTIVE and index > 0 and index <= #self.loansList then
+    if list == self.listLoans
+        and self.currentTab == BankMenuFrame.TAB.ACTIVE
+        and index > 0
+        and index <= #self.loansList then
         self.selectedLoan = self.loansList[index]
     else
         self.selectedLoan = nil
@@ -680,6 +704,10 @@ function BankMenuFrame:onClickTermChoice3() self:setTermChoice(3) end
 function BankMenuFrame:onClickTermChoice4() self:setTermChoice(4) end
 
 function BankMenuFrame:onClickBorrow()
+    if self.currentView ~= "loanForm"
+        or (self.btnFormBorrow ~= nil and self.btnFormBorrow.disabled) then
+        return
+    end
     g_bankManager:request(BankManager.ACTION_BORROW, self.amount, BankManager.TERMS[self.termIndex])
 end
 
