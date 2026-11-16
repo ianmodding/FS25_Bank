@@ -57,12 +57,13 @@ function BankSyncEvent.emptyNew()
     return Event.new(BankSyncEvent_mt)
 end
 
-function BankSyncEvent.new(farmId, loans, score, notice)
+function BankSyncEvent.new(farmId, loans, score, notice, closedLoans)
     local self = BankSyncEvent.emptyNew()
     self.farmId = farmId
     self.loans = loans
     self.score = score
     self.notice = notice or 0
+    self.closedLoans = closedLoans or {}
     return self
 end
 
@@ -84,6 +85,21 @@ function BankSyncEvent:readStream(streamId, connection)
             missed = streamReadUInt8(streamId)
         })
     end
+
+    self.closedLoans = {}
+    local closedCount = streamReadUInt16(streamId)
+    for _ = 1, closedCount do
+        table.insert(self.closedLoans, {
+            id = streamReadInt32(streamId),
+            principal = streamReadFloat32(streamId),
+            paidAmount = streamReadFloat32(streamId),
+            annualRate = streamReadFloat32(streamId),
+            installment = streamReadFloat32(streamId),
+            monthsLeft = streamReadUInt8(streamId),
+            missed = streamReadUInt8(streamId),
+            closedType = streamReadUInt8(streamId)
+        })
+    end
     self:run(connection)
 end
 
@@ -101,12 +117,24 @@ function BankSyncEvent:writeStream(streamId, connection)
         streamWriteUInt8(streamId, math.min(loan.monthsLeft, 255))
         streamWriteUInt8(streamId, math.min(loan.missed, 255))
     end
+
+    streamWriteUInt16(streamId, #self.closedLoans)
+    for _, loan in ipairs(self.closedLoans) do
+        streamWriteInt32(streamId, loan.id)
+        streamWriteFloat32(streamId, loan.principal)
+        streamWriteFloat32(streamId, loan.paidAmount)
+        streamWriteFloat32(streamId, loan.annualRate)
+        streamWriteFloat32(streamId, loan.installment)
+        streamWriteUInt8(streamId, math.min(loan.monthsLeft, 255))
+        streamWriteUInt8(streamId, math.min(loan.missed, 255))
+        streamWriteUInt8(streamId, loan.closedType)
+    end
 end
 
 function BankSyncEvent:run(connection)
     if g_bankManager == nil then
         return
     end
-    g_bankManager:setFarmData(self.farmId, self.loans, self.score)
+    g_bankManager:setFarmData(self.farmId, self.loans, self.score, self.closedLoans)
     g_bankManager:notify(self.farmId, self.notice)
 end

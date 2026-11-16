@@ -54,5 +54,13 @@
         <text name="bank_score_limit" text="Limite pelo score: %s"/>
         <text name="bank_overdue_limit" text="Parcela em atraso: limite de %s"/>
         <text name="bank_row_overdue" text="ATRASADO · parcela %s · %d meses"/>
+        <text name="bank_active_tab" text="Empréstimos ativos"/>
+        <text name="bank_closed_tab" text="Empréstimos encerrados"/>
+        <text name="bank_no_closed_loans" text="Nenhum empréstimo encerrado ainda."/>
+        <text name="bank_closed_count" text="%d encerrados"/>
+        <text name="bank_page_value" text="%d/%d"/>
+        <text name="bank_closed_row" text="Original %s · fechamento %s · %s · %.1f%% a.a."/>
+        <text name="bank_closed_early" text="Quitado antecipadamente"/>
+        <text name="bank_closed_complete" text="Concluído"/>
     </texts>
 </l10n>

@@ -54,5 +54,13 @@
         <text name="bank_score_limit" text="Score limit: %s"/>
         <text name="bank_overdue_limit" text="Overdue installment: limit %s"/>
         <text name="bank_row_overdue" text="OVERDUE · installment %s · %d months"/>
+        <text name="bank_active_tab" text="Active loans"/>
+        <text name="bank_closed_tab" text="Closed loans"/>
+        <text name="bank_no_closed_loans" text="No closed loans yet."/>
+        <text name="bank_closed_count" text="%d closed"/>
+        <text name="bank_page_value" text="%d/%d"/>
+        <text name="bank_closed_row" text="Original %s · closing payment %s · %s · %.1f%% p.a."/>
+        <text name="bank_closed_early" text="Paid off early"/>
+        <text name="bank_closed_complete" text="Completed"/>
     </texts>
 </l10n>

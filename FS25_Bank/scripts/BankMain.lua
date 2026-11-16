@@ -89,7 +89,13 @@ function BankMain.onSendInitialClientState(_, connection)
         return
     end
     for farmId, score in pairs(g_bankManager.scores) do
-        connection:sendEvent(BankSyncEvent.new(farmId, g_bankManager:getFarmLoans(farmId), score, BankManager.NOTICE.NONE))
+        connection:sendEvent(BankSyncEvent.new(
+            farmId,
+            g_bankManager:getFarmLoans(farmId),
+            score,
+            BankManager.NOTICE.NONE,
+            g_bankManager:getClosedLoans(farmId)
+        ))
     end
 end
 

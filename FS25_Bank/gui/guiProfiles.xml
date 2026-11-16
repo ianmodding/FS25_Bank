@@ -8,11 +8,11 @@
         </Profile>
 
         <Profile name="bankCard" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.150 0.172 0.195 1"/>
+            <imageColor value="0.004 0.004 0.004 1"/>
         </Profile>
 
         <Profile name="bankCardInset" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.195 0.220 0.248 1"/>
+            <imageColor value="0.018 0.018 0.018 1"/>
         </Profile>
 
         <Profile name="bankAccentBar" extends="baseReference" with="anchorBottomLeft">
@@ -24,7 +24,7 @@
         </Profile>
 
         <Profile name="bankProgressTrack" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.24 0.27 0.30 1"/>
+            <imageColor value="0.055 0.055 0.055 1"/>
         </Profile>
 
         <Profile name="bankProgressFill" extends="baseReference" with="anchorBottomLeft">
@@ -104,7 +104,7 @@
             <imageFocusedColor value="0.82 1 0.25 1"/>
             <imageHighlightedColor value="0.82 1 0.25 1"/>
             <imageSelectedColor value="0.82 1 0.25 1"/>
-            <imageDisabledColor value="0.04231 0.04231 0.04231 1"/>
+            <imageDisabledColor value="0.015 0.015 0.015 1"/>
             <textSize value="19px"/>
             <textBold value="true"/>
             <textUpperCase value="true"/>
@@ -117,10 +117,10 @@
         </Profile>
 
         <Profile name="bankButtonGhost" extends="bankButton">
-            <imageColor value="0.215 0.245 0.275 1"/>
-            <imageFocusedColor value="0.30 0.34 0.38 1"/>
-            <imageHighlightedColor value="0.30 0.34 0.38 1"/>
-            <imageSelectedColor value="0.30 0.34 0.38 1"/>
+            <imageColor value="0.035 0.035 0.035 1"/>
+            <imageFocusedColor value="0.085 0.085 0.085 1"/>
+            <imageHighlightedColor value="0.085 0.085 0.085 1"/>
+            <imageSelectedColor value="0.085 0.085 0.085 1"/>
             <textColor value="0.92 0.94 0.96 1"/>
             <textFocusedColor value="1 1 1 1"/>
             <textHighlightedColor value="1 1 1 1"/>
@@ -137,7 +137,7 @@
             <textFocusedColor value="1 1 1 1"/>
             <textHighlightedColor value="1 1 1 1"/>
             <textSelectedColor value="1 1 1 1"/>
-            <textSize value="16px"/>
+            <textSize value="14px"/>
         </Profile>
 
         <Profile name="bankChip" extends="bankButtonGhost">
@@ -148,6 +148,24 @@
         <Profile name="bankChipSelected" extends="bankButton">
             <textUpperCase value="false"/>
             <textSize value="17px"/>
+        </Profile>
+
+        <Profile name="bankTab" extends="bankButtonGhost">
+            <textUpperCase value="true"/>
+            <textSize value="15px"/>
+        </Profile>
+
+        <Profile name="bankTabSelected" extends="bankButton">
+            <textUpperCase value="true"/>
+            <textSize value="15px"/>
+        </Profile>
+
+        <Profile name="bankPagerButton" extends="bankButtonGhost">
+            <textSize value="18px"/>
+        </Profile>
+
+        <Profile name="bankLoanRow" extends="bankText">
+            <textSize value="16px"/>
         </Profile>
     </Profiles>
 </GUIProfiles>

@@ -8,6 +8,8 @@ local BankManager_mt = Class(BankManager)
 
 BankManager.ACTION_BORROW = 1
 BankManager.ACTION_PAYOFF = 2
+BankManager.CLOSED_LOAN_PAID_EARLY = 1
+BankManager.CLOSED_LOAN_COMPLETED = 2
 
 BankManager.MAX_LOANS_PER_FARM = 5
 BankManager.MIN_AMOUNT = 5000
@@ -56,6 +58,7 @@ BankManager.NOTICE_TEXT = {
 function BankManager.new()
     local self = setmetatable({}, BankManager_mt)
     self.loans = {}        -- [farmId] = { loan, loan, ... }
+    self.closedLoans = {}  -- [farmId] = { loan, loan, ... }
     self.scores = {}       -- [farmId] = 0..750
     self.nextLoanId = 1
     return self
@@ -86,6 +89,29 @@ end
 
 function BankManager:getFarmLoans(farmId)
     return self.loans[farmId] or {}
+end
+
+function BankManager:getClosedLoans(farmId)
+    return self.closedLoans[farmId] or {}
+end
+
+function BankManager:archiveLoan(farmId, loan, closedType, paidAmount)
+    local closedLoans = self.closedLoans[farmId]
+    if closedLoans == nil then
+        closedLoans = {}
+        self.closedLoans[farmId] = closedLoans
+    end
+
+    table.insert(closedLoans, {
+        id = loan.id,
+        principal = loan.principal,
+        paidAmount = paidAmount,
+        annualRate = loan.annualRate,
+        installment = loan.installment,
+        monthsLeft = loan.monthsLeft,
+        missed = loan.missed,
+        closedType = closedType
+    })
 end
 
 function BankManager:getScore(farmId)
@@ -255,6 +281,7 @@ function BankManager:payoff(farmId, loanId)
                 return N.ERR_FUNDS
             end
             g_currentMission:addMoney(-loan.remaining, farmId, MoneyType.LOAN, true, true)
+            self:archiveLoan(farmId, loan, BankManager.CLOSED_LOAN_PAID_EARLY, loan.remaining)
             table.remove(loans, i)
             self:adjustScore(farmId, BankManager.SCORE_PAYOFF)
             return N.PAID_OFF
@@ -295,6 +322,7 @@ function BankManager:onPeriodChanged()
                         notice = N.PAID
                     end
                     if loan.monthsLeft <= 0 or loan.remaining < 1 then
+                        self:archiveLoan(farmId, loan, BankManager.CLOSED_LOAN_COMPLETED, due)
                         table.remove(loans, i)
                     end
                 else
@@ -316,15 +344,22 @@ end
 -- Sincronizacao e avisos
 ---------------------------------------------------------------------
 function BankManager:broadcast(farmId, notice)
-    g_server:broadcastEvent(BankSyncEvent.new(farmId, self:getFarmLoans(farmId), self:getScore(farmId), notice), false)
+    g_server:broadcastEvent(BankSyncEvent.new(
+        farmId,
+        self:getFarmLoans(farmId),
+        self:getScore(farmId),
+        notice,
+        self:getClosedLoans(farmId)
+    ), false)
     self:notify(farmId, notice)
     self:fireChanged()
 end
 
 -- Chamado nos clientes ao receber dados do servidor
-function BankManager:setFarmData(farmId, loans, score)
+function BankManager:setFarmData(farmId, loans, score, closedLoans)
     self.loans[farmId] = loans
     self.scores[farmId] = score
+    self.closedLoans[farmId] = closedLoans or {}
     self:fireChanged()
 end
 
@@ -370,6 +405,14 @@ function BankManager.registerXMLPaths(schema)
     schema:register(XMLValueType.FLOAT, "modernBank.farms.farm(?).loan(?)#installment", "Installment")
     schema:register(XMLValueType.INT, "modernBank.farms.farm(?).loan(?)#monthsLeft", "Months left")
     schema:register(XMLValueType.INT, "modernBank.farms.farm(?).loan(?)#missed", "Missed payments", 0)
+    schema:register(XMLValueType.INT, "modernBank.farms.farm(?).closedLoan(?)#id", "Closed loan id")
+    schema:register(XMLValueType.FLOAT, "modernBank.farms.farm(?).closedLoan(?)#principal", "Closed loan principal")
+    schema:register(XMLValueType.FLOAT, "modernBank.farms.farm(?).closedLoan(?)#paidAmount", "Amount paid to close loan")
+    schema:register(XMLValueType.FLOAT, "modernBank.farms.farm(?).closedLoan(?)#annualRate", "Closed loan annual rate")
+    schema:register(XMLValueType.FLOAT, "modernBank.farms.farm(?).closedLoan(?)#installment", "Closed loan installment")
+    schema:register(XMLValueType.INT, "modernBank.farms.farm(?).closedLoan(?)#monthsLeft", "Months left when closed")
+    schema:register(XMLValueType.INT, "modernBank.farms.farm(?).closedLoan(?)#missed", "Missed payments when closed", 0)
+    schema:register(XMLValueType.INT, "modernBank.farms.farm(?).closedLoan(?)#closedType", "Loan closure type")
 end
 
 BankManager.xmlSchema = XMLSchema.new("modernBank")
@@ -412,6 +455,18 @@ function BankManager:save()
             xmlFile:setInt(lKey .. "#monthsLeft", loan.monthsLeft)
             xmlFile:setInt(lKey .. "#missed", loan.missed)
         end
+
+        for j, loan in ipairs(self:getClosedLoans(farmId)) do
+            local lKey = string.format("%s.closedLoan(%d)", fKey, j - 1)
+            xmlFile:setInt(lKey .. "#id", loan.id)
+            xmlFile:setFloat(lKey .. "#principal", loan.principal)
+            xmlFile:setFloat(lKey .. "#paidAmount", loan.paidAmount)
+            xmlFile:setFloat(lKey .. "#annualRate", loan.annualRate)
+            xmlFile:setFloat(lKey .. "#installment", loan.installment)
+            xmlFile:setInt(lKey .. "#monthsLeft", loan.monthsLeft)
+            xmlFile:setInt(lKey .. "#missed", loan.missed)
+            xmlFile:setInt(lKey .. "#closedType", loan.closedType)
+        end
         i = i + 1
     end
 
@@ -441,6 +496,7 @@ function BankManager:load()
             end
             self.scores[farmId] = math.max(0, math.min(BankManager.SCORE_MAX, savedScore))
             self.loans[farmId] = {}
+            self.closedLoans[farmId] = {}
             xmlFile:iterate(fKey .. ".loan", function(_, lKey)
                 table.insert(self.loans[farmId], {
                     id = xmlFile:getInt(lKey .. "#id"),
@@ -450,6 +506,18 @@ function BankManager:load()
                     installment = xmlFile:getFloat(lKey .. "#installment"),
                     monthsLeft = xmlFile:getInt(lKey .. "#monthsLeft"),
                     missed = xmlFile:getInt(lKey .. "#missed", 0)
+                })
+            end)
+            xmlFile:iterate(fKey .. ".closedLoan", function(_, lKey)
+                table.insert(self.closedLoans[farmId], {
+                    id = xmlFile:getInt(lKey .. "#id"),
+                    principal = xmlFile:getFloat(lKey .. "#principal"),
+                    paidAmount = xmlFile:getFloat(lKey .. "#paidAmount"),
+                    annualRate = xmlFile:getFloat(lKey .. "#annualRate"),
+                    installment = xmlFile:getFloat(lKey .. "#installment"),
+                    monthsLeft = xmlFile:getInt(lKey .. "#monthsLeft"),
+                    missed = xmlFile:getInt(lKey .. "#missed", 0),
+                    closedType = xmlFile:getInt(lKey .. "#closedType", BankManager.CLOSED_LOAN_COMPLETED)
                 })
             end)
         end

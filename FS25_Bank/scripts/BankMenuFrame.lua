@@ -21,6 +21,8 @@ function BankMenuFrame.new()
     self.isShown = false
     self.menuButtonInfo = {}
     self.maxAllowed = BankManager.MAX_AMOUNT
+    self.loanView = "active"
+    self.loanPage = 1
     return self
 end
 
@@ -233,6 +235,7 @@ function BankMenuFrame:refresh()
     local totalPay = installment * months
     local available = bm:getAvailableCredit(farmId)
     local loans = bm:getFarmLoans(farmId)
+    local closedLoans = bm:getClosedLoans(farmId)
     local monthlyPayments = 0
     for _, loan in ipairs(loans) do
         monthlyPayments = monthlyPayments + loan.installment
@@ -273,8 +276,6 @@ function BankMenuFrame:refresh()
     self:setTextOf("totalPayText", fmt(totalPay))
     self:setTextOf("interestText", fmt(totalPay - self.amount))
     self:setTextOf("rateText", string.format("%.1f%%", rate * 100))
-    self:setTextOf("loanCountText", string.format("%d/%d", #loans, BankManager.MAX_LOANS_PER_FARM))
-    self:setVisibleOf("emptyLoansText", #loans == 0)
 
     local canBorrow = self.amount <= available and self.amount <= maxAllowed and #loans < BankManager.MAX_LOANS_PER_FARM
     if self.amount > available then
@@ -320,16 +321,49 @@ function BankMenuFrame:refresh()
         (self.amount - BankManager.MIN_AMOUNT) / (BankManager.MAX_AMOUNT - BankManager.MIN_AMOUNT)
     )
 
+    local showingClosed = self.loanView == "closed"
+    local displayedLoans = showingClosed and closedLoans or loans
+    local pageCount = math.max(1, math.ceil(#displayedLoans / BankMenuFrame.MAX_ROWS))
+    self.loanPage = math.max(1, math.min(self.loanPage, pageCount))
+    self:setVisibleOf("activeLoansTab", showingClosed)
+    self:setVisibleOf("activeLoansTabSelected", not showingClosed)
+    self:setVisibleOf("closedLoansTab", not showingClosed)
+    self:setVisibleOf("closedLoansTabSelected", showingClosed)
+    self:setTextOf("loanCountText", showingClosed
+        and string.format(g_i18n:getText("bank_closed_count"), #closedLoans)
+        or string.format("%d/%d", #loans, BankManager.MAX_LOANS_PER_FARM))
+    self:setTextOf("loanPageText", string.format(g_i18n:getText("bank_page_value"), self.loanPage, pageCount))
+    self:setDisabledOf("loanPrevBtn", self.loanPage <= 1)
+    self:setDisabledOf("loanNextBtn", self.loanPage >= pageCount)
+    self:setTextOf("emptyLoansText", g_i18n:getText(showingClosed and "bank_no_closed_loans" or "bank_no_loans"))
+    self:setVisibleOf("emptyLoansText", #displayedLoans == 0)
+
     for i = 1, BankMenuFrame.MAX_ROWS do
-        local loan = loans[i]
+        local loanIndex = showingClosed
+            and (#displayedLoans - (self.loanPage - 1) * BankMenuFrame.MAX_ROWS - i + 1)
+            or ((self.loanPage - 1) * BankMenuFrame.MAX_ROWS + i)
+        local loan = displayedLoans[loanIndex]
         local textId = "loanText" .. i
         local buttonId = "payoffBtn" .. i
         local backgroundId = "loanRowBg" .. i
 
         if loan ~= nil then
-            self:setTextOf(textId, string.format(g_i18n:getText("bank_row"), fmt(loan.remaining), fmt(loan.installment), loan.monthsLeft, loan.annualRate * 100))
+            if showingClosed then
+                local closedStatus = loan.closedType == BankManager.CLOSED_LOAN_PAID_EARLY
+                    and g_i18n:getText("bank_closed_early")
+                    or g_i18n:getText("bank_closed_complete")
+                self:setTextOf(textId, string.format(
+                    g_i18n:getText("bank_closed_row"),
+                    fmt(loan.principal),
+                    fmt(loan.paidAmount),
+                    closedStatus,
+                    loan.annualRate * 100
+                ))
+            else
+                self:setTextOf(textId, string.format(g_i18n:getText("bank_row"), fmt(loan.remaining), fmt(loan.installment), loan.monthsLeft, loan.annualRate * 100))
+            end
             self:setVisibleOf(textId, true)
-            self:setVisibleOf(buttonId, true)
+            self:setVisibleOf(buttonId, not showingClosed)
             self:setVisibleOf(backgroundId, true)
         else
             self:setVisibleOf(textId, false)
@@ -350,6 +384,40 @@ end
 function BankMenuFrame:onClickAmountUp()
     self.amount = math.min(math.min(BankManager.MAX_AMOUNT, self.maxAllowed), self.amount + BankManager.AMOUNT_STEP)
     self:safeRefresh()
+end
+
+function BankMenuFrame:setLoanView(view)
+    if view ~= self.loanView then
+        self.loanView = view
+        self.loanPage = 1
+        self:safeRefresh()
+    end
+end
+
+function BankMenuFrame:changeLoansPage(offset)
+    local farmId = g_currentMission:getFarmId()
+    local loans = self.loanView == "closed"
+        and g_bankManager:getClosedLoans(farmId)
+        or g_bankManager:getFarmLoans(farmId)
+    local pageCount = math.max(1, math.ceil(#loans / BankMenuFrame.MAX_ROWS))
+    self.loanPage = math.max(1, math.min(self.loanPage + offset, pageCount))
+    self:safeRefresh()
+end
+
+function BankMenuFrame:onClickActiveLoansTab()
+    self:setLoanView("active")
+end
+
+function BankMenuFrame:onClickClosedLoansTab()
+    self:setLoanView("closed")
+end
+
+function BankMenuFrame:onClickPreviousLoansPage()
+    self:changeLoansPage(-1)
+end
+
+function BankMenuFrame:onClickNextLoansPage()
+    self:changeLoansPage(1)
 end
 
 function BankMenuFrame:setAmountPreset(index)
