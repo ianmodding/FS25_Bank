@@ -37,8 +37,6 @@
         <text name="bank_monthly_total" text="Parcelas por mês: %s"/>
         <text name="bank_score_title" text="Score de crédito"/>
         <text name="bank_loan_amount_title" text="Valor do empréstimo"/>
-        <text name="bank_select_loan_to_payoff" text="Clique em um empréstimo da lista para selecioná-lo e quitar."/>
-        <text name="bank_payoff_selected" text="Saldo para quitar: %s"/>
         <text name="bank_tier_excellent" text="Excelente"/>
         <text name="bank_tier_good" text="Bom"/>
         <text name="bank_tier_fair" text="Regular"/>

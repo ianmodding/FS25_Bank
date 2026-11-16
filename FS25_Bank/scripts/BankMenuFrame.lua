@@ -478,7 +478,6 @@ end
 
 function BankMenuFrame:updateViewVisibility()
     local showModal = self.currentView == "loanForm"
-    self:setVisibleOf("loanModalBackdrop", showModal)
     self:setVisibleOf("loanFormView", showModal)
 
     for index, page in pairs(self.subCategoryPages or {}) do
@@ -506,19 +505,6 @@ function BankMenuFrame:updateButtonStates()
         and self.currentTab == BankMenuFrame.TAB.ACTIVE
         and self.selectedLoan ~= nil
     self.btnPayoff.disabled = not canPayoff
-    self:setDisabledOf("payoffSelectedButton", not canPayoff)
-    self:setVisibleOf("payoffActionBar",
-        self.currentView == "dashboard"
-        and self.currentTab == BankMenuFrame.TAB.ACTIVE
-        and #self.loansList > 0)
-    if canPayoff then
-        self:setTextOf("payoffSelectionText", string.format(
-            g_i18n:getText("bank_payoff_selected"),
-            BankManager.formatMoney(self.selectedLoan.remaining or 0)
-        ))
-    else
-        self:setTextOf("payoffSelectionText", g_i18n:getText("bank_select_loan_to_payoff"))
-    end
     if self.setMenuButtonInfoDirty ~= nil then
         self:setMenuButtonInfoDirty()
     end

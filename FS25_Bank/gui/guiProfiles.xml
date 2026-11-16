@@ -3,13 +3,8 @@
 <GUIProfiles>
     <Profiles>
         <Profile name="bankPage" extends="emptyPanel" with="anchorBottomLeft">
-            <size value="900px 540px"/>
-            <position value="206px 20px"/>
-        </Profile>
-
-        <Profile name="bankModalBackdrop" extends="baseReference" with="anchorBottomLeft">
-            <size value="100% 100%"/>
-            <imageColor value="0 0 0 0.68"/>
+            <size value="760px 456px"/>
+            <position value="276px 62px"/>
         </Profile>
 
         <Profile name="bankModalPanelBg" extends="baseReference" with="anchorBottomLeft">
@@ -64,7 +59,7 @@
         </Profile>
 
         <Profile name="bankFormCardBg" extends="baseReference" with="anchorBottomLeft">
-            <size value="760px 280px"/>
+            <size value="720px 127px"/>
             <color value="0 0 0 0.88"/>
             <cornerSize value="0.08"/>
         </Profile>
@@ -212,21 +207,6 @@
             <textSize value="18px"/>
         </Profile>
 
-        <Profile name="bankPayoffActionBar" extends="emptyPanel" with="anchorTopLeft">
-            <size value="1540px 56px"/>
-        </Profile>
-
-        <Profile name="bankPayoffActionBg" extends="bankFormCardBg">
-            <size value="1540px 56px"/>
-            <cornerSize value="0.2"/>
-        </Profile>
-
-        <Profile name="bankPayoffActionText" extends="baseReference" with="anchorTopLeft">
-            <textSize value="18px"/>
-            <textColor value="$preset_colorWhite_50"/>
-            <textVerticalAlignment value="middle"/>
-        </Profile>
-
         <Profile name="bankLoanRow" extends="bankText">
             <textSize value="14px"/>
         </Profile>
@@ -315,7 +295,7 @@
 
         <Profile name="bankLoansList" extends="emptyPanel" with="pivotTopLeft">
             <position value="0px -190px"/>
-            <size value="1540px 236px"/>
+            <size value="1540px 600px"/>
         </Profile>
 
         <Profile name="bankLoansListItem" extends="fs25_calendarListItem">

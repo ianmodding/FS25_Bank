@@ -37,8 +37,6 @@
         <text name="bank_monthly_total" text="Monthly installments: %s"/>
         <text name="bank_score_title" text="Credit score"/>
         <text name="bank_loan_amount_title" text="Loan amount"/>
-        <text name="bank_select_loan_to_payoff" text="Click a loan in the list to select it for payoff."/>
-        <text name="bank_payoff_selected" text="Payoff balance: %s"/>
         <text name="bank_tier_excellent" text="Excellent"/>
         <text name="bank_tier_good" text="Good"/>
         <text name="bank_tier_fair" text="Fair"/>

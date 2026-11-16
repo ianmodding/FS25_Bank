@@ -9,7 +9,7 @@ BankMain = {}
 BankMain.dir = modDirectory
 BankMain.modName = modName
 
-BankMain.ENABLE_MENU_TAB = true
+BankMain.ENABLE_MENU_TAB = false
 
 source(modDirectory .. "scripts/BankManager.lua")
 source(modDirectory .. "scripts/BankEvents.lua")
