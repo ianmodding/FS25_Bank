@@ -109,7 +109,7 @@ function BankMenuFrame.register()
 
     local pageName = BankMenuFrame.PAGE_NAME
     inGameMenu[pageName] = frame
-    inGameMenu:registerPage(frame, pageName, function() return true end)
+    inGameMenu:registerPage(frame, nil, function() return true end)
 
     local iconFile = Utils.getFilename("images/menuIcon.png", BankMain.dir)
     inGameMenu:addPageTab(frame, iconFile, GuiUtils.getUVs({0, 0, 1024, 1024}))
