@@ -6,7 +6,7 @@
 
 **Um sistema bancário completo dentro do Farming Simulator 25.**
 
-Gerencie empréstimos, acompanhe seu score de crédito e tenha controle total das suas finanças dentro do jogo.
+Gerencie empréstimos e investimentos, acompanhe seu score de crédito e tenha controle das finanças da sua fazenda.
 
 [![Farming Simulator 25](https://img.shields.io/badge/Farming%20Simulator-25-B8F900?style=for-the-badge&logoColor=black)](https://www.farming-simulator.com/)
 [![Mod](https://img.shields.io/badge/MOD-BANK-000000?style=for-the-badge)](#)
@@ -18,9 +18,9 @@ Gerencie empréstimos, acompanhe seu score de crédito e tenha controle total da
 
 ## 📋 Sobre o Mod
 
-O **FS25 Bank** traz um sistema bancário completo para dentro do Farming Simulator 25, permitindo que os jogadores tenham acesso a diferentes modalidades de empréstimos e um sistema financeiro mais dinâmico.
+O **FS25 Bank** traz um sistema bancário para dentro do Farming Simulator 25, com empréstimos e investimentos a prazo.
 
-Com score de crédito, limite de empréstimo dinâmico e pagamentos automáticos, suas decisões financeiras passam a ter impacto na sua fazenda.
+Gerencie o score de crédito, acompanhe os limites e pagamentos dos empréstimos e invista o saldo da fazenda para receber o valor aplicado mais os rendimentos no vencimento.
 
 ## ✨ Funcionalidades
 
@@ -30,22 +30,26 @@ Com score de crédito, limite de empréstimo dinâmico e pagamentos automáticos
 - 📈 **Limite dinâmico:** seu limite de crédito varia de acordo com seu perfil financeiro.
 - 📅 **Parcelas mensais automáticas:** pagamentos realizados automaticamente.
 - 💳 **Gestão financeira:** acompanhe seus empréstimos e compromissos financeiros.
+- 📊 **Investimentos a prazo:** escolha entre 3, 6, 12 ou 24 meses, com taxas anuais fixas de 3%, 4%, 5% e 6%, respectivamente.
+- 💸 **Rendimento automático:** o valor aplicado e os juros compostos mensalmente são creditados no vencimento. Não é possível resgatar antes do prazo.
+- 🔒 **Limites de investimento:** aplique de 5.000 a 500.000, em incrementos de 5.000, com até cinco investimentos ativos por fazenda.
 
 ## 🎮 Como utilizar
 
-Para abrir o banco dentro do jogo:
+Para abrir o banco durante o jogo:
 
 1. Entre na sua fazenda.
 2. Esteja a pé (fora de veículos).
 3. Pressione **ALT + B**.
 4. A interface do banco será aberta.
 
-Também é possível acessar a aba **Banco** pelo menu **ESC**.
+Na interface, use as abas **Empréstimos** e **Investimentos** para alternar entre as modalidades. O acesso pelo menu **ESC** está desativado.
 
 ## 🖥️ Compatibilidade
 
 - Farming Simulator 25
-- Sistema de empréstimos integrado ao jogo.
+- Empréstimos e investimentos integrados ao sistema financeiro do jogo.
+- Suporte a multiplayer.
 
 ## 👨‍💻 Desenvolvedor
 

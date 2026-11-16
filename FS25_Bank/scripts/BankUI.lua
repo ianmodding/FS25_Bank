@@ -6,7 +6,7 @@
 
 BankUI = {}
 
-BankUI.PANEL = {x = 440, y = 180, w = 1040, h = 720}
+BankUI.PANEL = {x = 440, y = 140, w = 1040, h = 800}
 BankUI.QUICK_AMOUNTS = {10000, 50000, 100000, 250000, 500000}
 
 local COLOR = {
@@ -482,7 +482,10 @@ function BankUI:drawInvestmentPanel(ox, oy, W, farmId)
     self:text(nx + 24, ny + 26, 18, T("bank_term"), COLOR.muted)
     local firstTermX = nx + 130
     local termCount = #BankManager.INVESTMENT_TERMS
-    local termWidth = (nw - 154 - (termCount - 1) * gap) / termCount
+    local investButtonWidth = 160
+    local investButtonX = nx + nw - 24 - investButtonWidth
+    local termAreaWidth = investButtonX - gap - firstTermX
+    local termWidth = (termAreaWidth - (termCount - 1) * gap) / termCount
     for index, months in ipairs(BankManager.INVESTMENT_TERMS) do
         local x = firstTermX + (index - 1) * (termWidth + gap)
         self:chip(
@@ -527,10 +530,10 @@ function BankUI:drawInvestmentPanel(ox, oy, W, farmId)
 
     self:button(
         "invest",
-        nx + nw - 184,
-        ny + 14,
-        160,
-        46,
+        investButtonX,
+        ny + 8,
+        investButtonWidth,
+        32,
         T("bank_invest"),
         canInvest,
         "accent",
@@ -561,6 +564,7 @@ function BankUI:drawPanel()
     local totalPay = installment * months
     local loans = bm:getFarmLoans(farmId)
     local investments = bm:getInvestments(farmId)
+    local investmentSlotsUsed = #investments / BankManager.MAX_INVESTMENTS_PER_FARM
     local investedPrincipal = 0
     for _, investment in ipairs(investments) do
         investedPrincipal = investedPrincipal + investment.principal
@@ -588,19 +592,19 @@ function BankUI:drawPanel()
     self:roundRect(ox, oy, W, P.h, 18, COLOR.panel)
 
     ---------------- cabecalho ----------------
-    self:roundRect(ox + 24, oy + 652, 56, 56, 14, COLOR.accent)
-    if self.iconOverlay ~= nil then
+    self:roundRect(ox + 24, oy + 712, 56, 56, 14, COLOR.accent)
+    if self.iconOverlay ~= nil and getIsOverlayReady ~= nil and getIsOverlayReady(self.iconOverlay) then
         setOverlayColor(self.iconOverlay, lin(0.04), lin(0.06), lin(0.02), self.alpha)
-        renderOverlay(self.iconOverlay, (ox + 32) / 1920, (oy + 660) / 1080, 40 / 1920, 40 / 1080)
+        renderOverlay(self.iconOverlay, (ox + 32) / 1920, (oy + 720) / 1080, 40 / 1920, 40 / 1080)
     end
-    self:text(ox + 96, oy + 693, 32, T("bank_title"), COLOR.white, RenderText.ALIGN_LEFT, true)
-    self:text(ox + 96, oy + 666, 17, tostring(farm.name or ""), COLOR.muted)
+    self:text(ox + 96, oy + 753, 32, T("bank_title"), COLOR.white, RenderText.ALIGN_LEFT, true)
+    self:text(ox + 96, oy + 726, 17, tostring(farm.name or ""), COLOR.muted)
 
-    self:text(ox + W - 96, oy + 700, 15, T("bank_balance_label"), COLOR.muted, RenderText.ALIGN_RIGHT)
-    self:text(ox + W - 96, oy + 674, 30, fmt(farm:getBalance()), COLOR.green, RenderText.ALIGN_RIGHT, true)
-    self:button("close", ox + W - 68, oy + 658, 44, 44, T("bank_close"), true, "ghost", 20, 12)
+    self:text(ox + W - 96, oy + 760, 15, T("bank_balance_label"), COLOR.muted, RenderText.ALIGN_RIGHT)
+    self:text(ox + W - 96, oy + 734, 30, fmt(farm:getBalance()), COLOR.green, RenderText.ALIGN_RIGHT, true)
+    self:button("close", ox + W - 68, oy + 718, 44, 44, T("bank_close"), true, "ghost", 20, 12)
 
-    self:rect(ox + 24, oy + 636, W - 48, 1, COLOR.line)
+    self:rect(ox + 24, oy + 696, W - 48, 1, COLOR.line)
 
     ---------------- cartoes de status ----------------
     local sy = oy + 512
@@ -652,8 +656,8 @@ function BankUI:drawPanel()
     self:text(x3 + cardW - 20, sy + 88, 16, T(tierKey), scoreColor, RenderText.ALIGN_RIGHT, true)
     self:bar(x3 + 20, sy + 20, cardW - 40, 8, score / BankManager.SCORE_MAX, scoreColor)
 
-    self:button("tabLoans", ox + 24, oy + 640, 200, 32, T("bank_tab_loans"), true, not isInvestmentsTab and "accent" or "ghost", 17, 8)
-    self:button("tabInvestments", ox + 236, oy + 640, 220, 32, T("bank_tab_investments"), true, isInvestmentsTab and "accent" or "ghost", 17, 8)
+    self:button("tabLoans", ox + 24, oy + 636, 200, 32, T("bank_tab_loans"), true, not isInvestmentsTab and "accent" or "ghost", 17, 8)
+    self:button("tabInvestments", ox + 236, oy + 636, 220, 32, T("bank_tab_investments"), true, isInvestmentsTab and "accent" or "ghost", 17, 8)
 
     if isInvestmentsTab then
         self:drawInvestmentPanel(ox, oy, W, farmId)
