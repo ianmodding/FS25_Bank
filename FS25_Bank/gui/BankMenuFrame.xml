@@ -14,17 +14,27 @@
         <GuiElement profile="bankPage">
 
             <!-- Resumo da conta -->
-            <Bitmap profile="bankCard" position="0px 494px" size="1312px 80px"/>
-            <Bitmap profile="bankAccentBar" position="0px 494px" size="6px 80px"/>
-            <Text profile="bankTextBold" id="balanceText" position="30px 536px" size="560px 28px"/>
-            <Text profile="bankText" id="limitText" position="30px 504px" size="560px 28px"/>
-            <Text profile="bankText" id="debtText" position="640px 536px" size="320px 28px"/>
-            <Text profile="bankText" id="scoreText" position="640px 504px" size="320px 28px"/>
-            <Text profile="bankText" id="rateText" position="1000px 536px" size="290px 28px"/>
+            <Bitmap profile="bankCard" position="0px 494px" size="422px 80px"/>
+            <Bitmap profile="bankAccentBar" position="0px 494px" size="5px 80px"/>
+            <Text profile="bankTextBold" id="balanceText" position="22px 536px" size="380px 28px"/>
+            <Text profile="bankText" id="limitText" position="22px 504px" size="380px 28px"/>
+
+            <Bitmap profile="bankCard" position="445px 494px" size="422px 80px"/>
+            <Bitmap profile="bankAccentBar" position="445px 494px" size="5px 80px"/>
+            <Text profile="bankTextBold" id="debtText" position="467px 536px" size="380px 28px"/>
+            <Text profile="bankText" id="scoreText" position="467px 504px" size="380px 28px"/>
+
+            <Bitmap profile="bankCard" position="890px 494px" size="422px 80px"/>
+            <Bitmap profile="bankAccentBar" position="890px 494px" size="5px 80px"/>
+            <Text profile="bankTextBold" id="rateText" position="912px 520px" size="380px 32px"/>
 
             <!-- Novo emprestimo -->
             <Text profile="bankSection" position="0px 445px" size="600px 34px" text="$l10n_bank_new_loan"/>
             <Bitmap profile="bankCard" position="0px 250px" size="1312px 185px"/>
+            <Bitmap profile="bankAccentBar" position="0px 250px" size="5px 185px"/>
+            <Bitmap profile="bankCardInset" position="292px 360px" size="248px 48px"/>
+            <Bitmap profile="bankCardInset" position="292px 290px" size="248px 48px"/>
+            <Bitmap profile="bankDivider" position="30px 352px" size="850px 2px"/>
 
             <Text profile="bankText" position="30px 372px" size="200px 34px" text="$l10n_bank_amount"/>
             <Button profile="bankButtonGhost" id="amountDownBtn" position="240px 366px" size="48px 46px" text="$l10n_bank_minus" onClick="onClickAmountDown"/>
@@ -42,6 +52,11 @@
             <!-- Meus emprestimos -->
             <Text profile="bankSection" position="0px 208px" size="600px 34px" text="$l10n_bank_my_loans"/>
             <Bitmap profile="bankCard" position="0px 0px" size="1312px 200px"/>
+            <Bitmap profile="bankAccentBar" position="0px 0px" size="5px 200px"/>
+            <Bitmap profile="bankDivider" position="30px 157px" size="1250px 1px"/>
+            <Bitmap profile="bankDivider" position="30px 119px" size="1250px 1px"/>
+            <Bitmap profile="bankDivider" position="30px 81px" size="1250px 1px"/>
+            <Bitmap profile="bankDivider" position="30px 43px" size="1250px 1px"/>
             <Text profile="bankText" id="loanText1" position="30px 160px" size="1080px 34px"/>
             <Button profile="bankButton" id="payoffBtn1" position="1130px 160px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff1"/>
             <Text profile="bankText" id="loanText2" position="30px 122px" size="1080px 34px"/>

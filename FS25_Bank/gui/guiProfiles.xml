@@ -8,11 +8,19 @@
         </Profile>
 
         <Profile name="bankCard" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.00439 0.00478 0.00368 0.78"/>
+            <imageColor value="0.055 0.063 0.074 0.98"/>
+        </Profile>
+
+        <Profile name="bankCardInset" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.085 0.098 0.112 1"/>
         </Profile>
 
         <Profile name="bankAccentBar" extends="baseReference" with="anchorBottomLeft">
             <imageColor value="0.33716 0.55834 0.0003 1"/>
+        </Profile>
+
+        <Profile name="bankDivider" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.24 0.28 0.31 0.85"/>
         </Profile>
 
         <Profile name="bankSection" extends="fs25_textDefault" with="anchorBottomLeft">
@@ -59,10 +67,10 @@
         </Profile>
 
         <Profile name="bankButtonGhost" extends="bankButton">
-            <imageColor value="0.20156 0.20156 0.20156 1"/>
-            <imageFocusedColor value="0.30 0.30 0.30 1"/>
-            <imageHighlightedColor value="0.30 0.30 0.30 1"/>
-            <imageSelectedColor value="0.30 0.30 0.30 1"/>
+            <imageColor value="0.13 0.15 0.17 1"/>
+            <imageFocusedColor value="0.22 0.26 0.29 1"/>
+            <imageHighlightedColor value="0.22 0.26 0.29 1"/>
+            <imageSelectedColor value="0.22 0.26 0.29 1"/>
             <textSize value="28px"/>
         </Profile>
     </Profiles>
