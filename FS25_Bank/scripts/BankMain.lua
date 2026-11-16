@@ -28,21 +28,16 @@ function BankMain:loadMap()
     end
 end
 
--- Registra a aba no menu ESC assim que o menu existir (uma unica vez, protegido por pcall)
-function BankMain:update(dt)
-    if not BankMain.ENABLE_MENU_TAB or self.tabDone or BankMenuFrame == nil then
+function BankMain.onInGameMenuLoadFinished(inGameMenu)
+    if not BankMain.ENABLE_MENU_TAB or BankMenuFrame == nil then
         return
     end
 
-    self.tabTries = (self.tabTries or 0) + 1
-    local ok, registered = pcall(BankMenuFrame.register)
+    local ok, registered = pcall(BankMenuFrame.register, inGameMenu)
     if not ok then
-        self.tabDone = true
         Logging.error("[BancoModerno] falha ao registrar a aba no menu ESC: %s", tostring(registered))
-    elseif registered then
-        self.tabDone = true
-    elseif self.tabTries > 600 then
-        self.tabDone = true -- menu nunca apareceu: desiste (o ALT+B continua funcionando)
+    elseif not registered then
+        Logging.warning("[BancoModerno] menu ESC ainda nao esta pronto para registrar a aba Banco")
     end
 end
 
@@ -101,5 +96,11 @@ end
 PlayerInputComponent.registerGlobalPlayerActionEvents = Utils.appendedFunction(PlayerInputComponent.registerGlobalPlayerActionEvents, BankMain.registerActionEvents)
 FSBaseMission.saveSavegame = Utils.appendedFunction(FSBaseMission.saveSavegame, BankMain.onSaveSavegame)
 FSBaseMission.sendInitialClientState = Utils.appendedFunction(FSBaseMission.sendInitialClientState, BankMain.onSendInitialClientState)
+
+if BankMain.ENABLE_MENU_TAB and InGameMenu ~= nil and InGameMenu.onLoadMapFinished ~= nil then
+    InGameMenu.onLoadMapFinished = Utils.appendedFunction(InGameMenu.onLoadMapFinished, BankMain.onInGameMenuLoadFinished)
+elseif BankMain.ENABLE_MENU_TAB then
+    Logging.error("[BancoModerno] API InGameMenu.onLoadMapFinished indisponivel; aba Banco nao registrada")
+end
 
 addModEventListener(BankMain)

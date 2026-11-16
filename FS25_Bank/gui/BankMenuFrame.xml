@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <!-- Aba "Banco" do menu ESC. Perfis fs25_menu* sao do jogo; bank* sao do mod (gui/guiProfiles.xml). -->
-<GUI>
-    <GuiElement profile="fs25_menuContainer">
+<GUI name="BankMenuFrame">
+    <GuiElement profile="baseReference">
+        <GuiElement profile="fs25_menuContainer">
 
         <GuiElement profile="fs25_menuHeaderPanel">
             <Bitmap profile="fs25_menuHeaderIconBg">
@@ -51,6 +52,7 @@
             <Button profile="bankButton" id="payoffBtn4" position="1130px 46px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff4"/>
             <Text profile="bankText" id="loanText5" position="30px 8px" size="1080px 34px"/>
             <Button profile="bankButton" id="payoffBtn5" position="1130px 8px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff5"/>
+        </GuiElement>
         </GuiElement>
     </GuiElement>
 </GUI>

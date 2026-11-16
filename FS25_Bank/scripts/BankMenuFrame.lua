@@ -15,47 +15,12 @@ BankMenuFrame.PAGE_NAME = "pageBank"
 
 function BankMenuFrame.new()
     local self = TabbedMenuFrameElement.new(nil, BankMenuFrame_mt)
+    self.name = "BankMenuFrame"
     self.amount = BankManager.MIN_AMOUNT
     self.termIndex = 2 -- 12 meses
     self.isShown = false
     self.menuButtonInfo = {}
     return self
-end
-
----------------------------------------------------------------------
--- Diagnostico da arvore de elementos (detecta ciclos / profundidade absurda)
----------------------------------------------------------------------
-local function describe(element)
-    return string.format("%s(id=%s)", tostring(element.name or "?"), tostring(element.id))
-end
-
-local function findCycle(element, onStack, depth, counter)
-    counter.count = counter.count + 1
-    if depth > 60 then
-        return "profundidade > 60 em " .. describe(element)
-    end
-    if onStack[element] then
-        return "ciclo em " .. describe(element)
-    end
-    onStack[element] = true
-    for _, child in ipairs(element.elements or {}) do
-        local result = findCycle(child, onStack, depth + 1, counter)
-        if result ~= nil then
-            return describe(element) .. " > " .. result
-        end
-    end
-    onStack[element] = nil
-    return nil
-end
-
-function BankMenuFrame.checkTree(root, label)
-    local counter = {count = 0}
-    local result = findCycle(root, {}, 0, counter)
-    if result ~= nil then
-        Logging.error("[BancoModerno] arvore '%s' COM PROBLEMA: %s", label, result)
-        return false
-    end
-    return true
 end
 
 ---------------------------------------------------------------------
@@ -90,47 +55,91 @@ end
 -- Registro da aba no menu ESC. Retorna true quando registrou,
 -- false se o menu ainda nao existe (tenta de novo depois).
 ---------------------------------------------------------------------
-function BankMenuFrame.register()
-    local inGameMenu = g_gui.screenControllers[InGameMenu]
+function BankMenuFrame.register(inGameMenu)
+    inGameMenu = inGameMenu or g_gui.screenControllers[InGameMenu]
     if inGameMenu == nil or inGameMenu.pagingElement == nil then
         return false
     end
 
-    BankMenuFrame.loadModProfiles()
-
-    local frame = BankMenuFrame.new()
-    g_gui:loadGui(BankMain.dir .. "gui/BankMenuFrame.xml", "BankMenuFrame", frame, true)
-    BankMenuFrame.INSTANCE = frame
-
-    -- nunca coloca no menu uma arvore quebrada
-    if not BankMenuFrame.checkTree(frame, "frame do banco") then
-        error("arvore do frame invalida; aba nao registrada")
+    if inGameMenu[BankMenuFrame.PAGE_NAME] ~= nil then
+        BankMenuFrame.INSTANCE = inGameMenu[BankMenuFrame.PAGE_NAME]
+        return true
     end
 
+    if inGameMenu.registerPage == nil
+        or inGameMenu.addPageTab == nil
+        or inGameMenu.exposeControlsAsFields == nil
+        or inGameMenu.controlIDs == nil
+        or inGameMenu.pageFrames == nil
+        or inGameMenu.pagingElement.addPage == nil
+        or inGameMenu.pagingElement.removePageByElement == nil then
+        error("API de registro de paginas do menu ESC incompleta")
+    end
+
+    BankMenuFrame.loadModProfiles()
+
+    local template = BankMenuFrame.new()
+    g_gui:loadGui(BankMain.dir .. "gui/BankMenuFrame.xml", "BankMenuFrame", template, true)
+
     local pageName = BankMenuFrame.PAGE_NAME
+    local referencePath = BankMain.dir .. "gui/BankMenuFrameRef.xml"
+    local xmlFile = loadXMLFile("BankMenuFrameReferences", referencePath)
+    if xmlFile == nil or xmlFile == 0 then
+        error("nao foi possivel carregar " .. referencePath)
+    end
+
+    inGameMenu.controlIDs[pageName] = nil
+    g_gui:loadGuiRec(xmlFile, "FrameReferences", inGameMenu.pagingElement, inGameMenu)
+    inGameMenu:exposeControlsAsFields(pageName)
+    inGameMenu.pagingElement:updatePageMapping()
+    delete(xmlFile)
+
+    local frame = g_gui:resolveFrameReference(inGameMenu[pageName])
+    if frame == nil or frame.initialize == nil then
+        error("nao foi possivel resolver a referencia da pagina " .. pageName)
+    end
+    if frame.elements == nil or frame.elements[1] == nil then
+        error("a pagina Banco nao possui elemento raiz")
+    end
+
+    frame.elements[1].title = g_i18n:getText("bank_title")
     inGameMenu[pageName] = frame
-    inGameMenu:registerPage(frame, nil, function() return true end)
+    inGameMenu.pagingElement:removePageByElement(frame)
+
+    local pagePosition = #inGameMenu.pageFrames + 1
+    local _, actualPosition = inGameMenu:registerPage(frame, pagePosition, function() return true end)
+    if actualPosition == nil then
+        error("o menu ESC nao retornou a posicao da pagina Banco")
+    end
 
     local iconFile = Utils.getFilename("images/menuIcon.png", BankMain.dir)
     inGameMenu:addPageTab(frame, iconFile, GuiUtils.getUVs({0, 0, 1024, 1024}))
+    inGameMenu.pagingElement:addPage(
+        string.upper(pageName),
+        frame,
+        g_i18n:getText("bank_title"),
+        actualPosition
+    )
 
+    frame:onGuiSetupFinished()
     frame:initialize()
+    inGameMenu.pagingElement:updateAbsolutePosition()
+    inGameMenu.pagingElement:updatePageMapping()
     inGameMenu:rebuildTabList()
 
-    if not BankMenuFrame.checkTree(inGameMenu, "menu ESC completo") then
-        -- ciclo no menu: remove a aba para nao travar o jogo
-        pcall(inGameMenu.pagingElement.removeElement, inGameMenu.pagingElement, frame)
-        error("menu ESC ficou com arvore invalida apos adicionar a aba")
-    end
-
-
+    BankMenuFrame.INSTANCE = frame
     return true
 end
 
 ---------------------------------------------------------------------
 -- Interface exigida pelo menu
 ---------------------------------------------------------------------
+function BankMenuFrame:onGuiSetupFinished()
+    BankMenuFrame:superClass().onGuiSetupFinished(self)
+end
+
 function BankMenuFrame:initialize()
+    BankMenuFrame:superClass().initialize(self)
 end
 
 function BankMenuFrame:getMenuButtonInfo()
