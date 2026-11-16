@@ -10,8 +10,16 @@ end
 BankMenuFrame = {}
 local BankMenuFrame_mt = Class(BankMenuFrame, TabbedMenuFrameElement)
 
-BankMenuFrame.MAX_ROWS = 5
 BankMenuFrame.PAGE_NAME = "pageBank"
+BankMenuFrame.TAB = {
+    ACTIVE = 1,
+    CLOSED = 2,
+}
+BankMenuFrame.SCREEN_EDGE_SLIDER_MARGIN_X = 0
+BankMenuFrame.NATIVE_DOCKED_SLIDER_OFFSET_Y = 10
+BankMenuFrame.COLOR_ACTIVE = {0.33716, 0.55834, 0.0003, 1}
+BankMenuFrame.COLOR_CLOSED = {0.40, 0.85, 0.40, 1}
+BankMenuFrame.COLOR_OVERDUE = {0.95, 0.72, 0.22, 1}
 
 function BankMenuFrame.new()
     local self = TabbedMenuFrameElement.new(nil, BankMenuFrame_mt)
@@ -20,10 +28,10 @@ function BankMenuFrame.new()
     self.termIndex = BankUI.termIndex
     self.isShown = false
     self.maxAllowed = BankManager.MAX_AMOUNT
-    self.loanView = "active"
-    self.loanPage = 1
+    self.currentTab = BankMenuFrame.TAB.ACTIVE
     self.currentView = "dashboard"
-    self.rowLoans = {}
+    self.selectedLoan = nil
+    self.loansList = {}
     return self
 end
 
@@ -33,6 +41,10 @@ end
 ---------------------------------------------------------------------
 function BankMenuFrame.loadModProfiles()
     local path = BankMain.dir .. "gui/guiProfiles.xml"
+    if g_overlayManager ~= nil
+        and (g_overlayManager.textureConfigs == nil or g_overlayManager.textureConfigs.fs25Bank == nil) then
+        g_overlayManager:addTextureConfigFile(BankMain.dir .. "images/menuIcon.xml", "fs25Bank")
+    end
     pcall(g_gui.loadProfiles, g_gui, path)
 
     if g_gui.profiles == nil or g_gui.profiles["bankPage"] ~= nil then
@@ -140,15 +152,42 @@ end
 ---------------------------------------------------------------------
 function BankMenuFrame:onGuiSetupFinished()
     BankMenuFrame:superClass().onGuiSetupFinished(self)
+    if self.listLoans ~= nil then
+        self.listLoans:setDataSource(self)
+        self.listLoans:setDelegate(self)
+    end
+    if self.listPaidLoans ~= nil then
+        self.listPaidLoans:setDataSource(self)
+        self.listPaidLoans:setDelegate(self)
+    end
 end
 
 function BankMenuFrame:initialize()
     BankMenuFrame:superClass().initialize(self)
+    for i, tab in pairs(self.subCategoryTabs or {}) do
+        local tabIndex = i
+        local background = tab:getDescendantByName("background")
+        if background ~= nil then
+            background.getIsSelected = function()
+                return tabIndex == self.subCategoryPaging:getState()
+            end
+        end
+        tab.getIsSelected = function()
+            return tabIndex == self.subCategoryPaging:getState()
+        end
+    end
+
     self.btnBack = {inputAction = InputAction.MENU_BACK}
     self.btnNewLoan = {
         text = g_i18n:getText("bank_new_loan"),
         inputAction = InputAction.MENU_ACTIVATE,
         callback = function() self:onClickNewLoan() end
+    }
+    self.btnPayoff = {
+        text = g_i18n:getText("bank_payoff"),
+        inputAction = InputAction.MENU_ACCEPT,
+        disabled = true,
+        callback = function() self:onClickPayoffSelected() end
     }
     self.btnFormBack = {
         text = g_i18n:getText("bank_back"),
@@ -156,21 +195,37 @@ function BankMenuFrame:initialize()
         callback = function() self:onClickBackToDashboard() end
     }
     self.menuButtonInfoByView = {
-        dashboard = {self.btnBack, self.btnNewLoan},
+        active = {self.btnBack, self.btnNewLoan, self.btnPayoff},
+        closed = {self.btnBack, self.btnNewLoan},
         loanForm = {self.btnFormBack}
     }
 end
 
 function BankMenuFrame:getMenuButtonInfo()
-    return self.menuButtonInfoByView ~= nil
-        and self.menuButtonInfoByView[self.currentView]
-        or {}
+    if self.menuButtonInfoByView == nil then
+        return {}
+    end
+    local view = self.currentView == "loanForm"
+        and "loanForm"
+        or (self.currentTab == BankMenuFrame.TAB.ACTIVE and "active" or "closed")
+    return self.menuButtonInfoByView[view] or {}
 end
 
 function BankMenuFrame:onFrameOpen()
     BankMenuFrame:superClass().onFrameOpen(self)
     self.isShown = true
     self.currentView = "dashboard"
+    self.currentTab = BankMenuFrame.TAB.ACTIVE
+    if self.subCategoryPaging ~= nil and self.subCategoryBox ~= nil then
+        local texts = {
+            g_i18n:getText("bank_active_tab"),
+            g_i18n:getText("bank_closed_tab"),
+        }
+        self.subCategoryBox:invalidateLayout()
+        self.subCategoryPaging:setTexts(texts)
+        self.subCategoryPaging:setSize(self.subCategoryBox.maxFlowSize + 140 * g_pixelSizeScaledX)
+        self.subCategoryPaging:setState(self.currentTab, true)
+    end
     if self.setMenuButtonInfoDirty ~= nil then
         self:setMenuButtonInfoDirty()
     end
@@ -180,6 +235,11 @@ end
 function BankMenuFrame:onFrameClose()
     BankMenuFrame:superClass().onFrameClose(self)
     self.isShown = false
+end
+
+function BankMenuFrame:update(dt)
+    BankMenuFrame:superClass().update(self, dt)
+    self:updateScreenEdgeSliders()
 end
 
 function BankMenuFrame:onDataChanged()
@@ -235,6 +295,12 @@ end
 -- Atualiza textos e botoes
 ---------------------------------------------------------------------
 function BankMenuFrame:refresh()
+    self:refreshDashboard()
+    self:refreshList()
+    self:updateViewVisibility()
+end
+
+function BankMenuFrame:refreshDashboard()
     local bm = g_bankManager
     local farmId = g_currentMission:getFarmId()
     local farm = g_farmManager:getFarmById(farmId)
@@ -257,7 +323,6 @@ function BankMenuFrame:refresh()
     local totalPay = installment * months
     local available = bm:getAvailableCredit(farmId)
     local loans = bm:getFarmLoans(farmId)
-    local closedLoans = bm:getClosedLoans(farmId)
     local monthlyPayments = 0
     for _, loan in ipairs(loans) do
         monthlyPayments = monthlyPayments + loan.installment
@@ -275,19 +340,17 @@ function BankMenuFrame:refresh()
         tierKey = "bank_tier_low"
     end
 
-    self:setTextOf("farmNameText", tostring(farm.name or ""))
-    self:setTextOf("balanceText", fmt(farm:getBalance()))
-    self:setTextOf("availableText", fmt(available))
-    self:setTextOf("availableUsageText", g_i18n:getText("bank_available_subtitle"))
-    self:setTextOf("debtText", fmt(debt))
-    self:setTextOf("debtUsageText", string.format(
+    self:updateBalanceDisplay(farm)
+    self:setTextOf("dashAvailableValue", fmt(available))
+    self:setTextOf("dashOutstandingValue", fmt(debt))
+    self:setTextOf("dashOutstandingSubValue", string.format(
         g_i18n:getText("bank_debt_usage"),
         math.floor(usedRatio * 100 + 0.5)
     ))
-    self:setTextOf("monthlyLoansText", fmt(monthlyPayments))
+    self:setTextOf("dashMonthlyTotalValue", fmt(monthlyPayments))
+    self:setTextOf("dashRateValue", string.format("%.2f%% →", rate * 100))
     self:setTextOf("scoreText", string.format("%d/%d", score, BankManager.SCORE_MAX))
     self:setTextOf("scoreTierText", g_i18n:getText(tierKey))
-    self:setTextOf("currentRateText", string.format("%.2f%%", rate * 100))
 
     self:setTextOf("amountText", fmt(self.amount))
     if bm:hasOverdue(farmId) then
@@ -344,86 +407,211 @@ function BankMenuFrame:refresh()
         "amountSliderTrack",
         (self.amount - BankManager.MIN_AMOUNT) / (BankManager.MAX_AMOUNT - BankManager.MIN_AMOUNT)
     )
+end
 
-    local showingClosed = self.loanView == "closed"
-    local displayedLoans = showingClosed and closedLoans or loans
-    local pageCount = math.max(1, math.ceil(#displayedLoans / BankMenuFrame.MAX_ROWS))
-    self.loanPage = math.max(1, math.min(self.loanPage, pageCount))
-    self:setVisibleOf("activeLoansTab", showingClosed)
-    self:setVisibleOf("activeLoansTabSelected", not showingClosed)
-    self:setVisibleOf("closedLoansTab", not showingClosed)
-    self:setVisibleOf("closedLoansTabSelected", showingClosed)
-    self:setTextOf("loanCountText", showingClosed
-        and string.format(g_i18n:getText("bank_closed_count"), #closedLoans)
-        or string.format("%d/%d", #loans, BankManager.MAX_LOANS_PER_FARM))
-    self:setTextOf("loanBalanceHeader", g_i18n:getText(
-        showingClosed and "bank_col_closing_payment" or "bank_col_remaining"
-    ))
-    self:setTextOf("loanPageText", string.format(g_i18n:getText("bank_page_value"), self.loanPage, pageCount))
-    self:setDisabledOf("loanPrevBtn", self.loanPage <= 1)
-    self:setDisabledOf("loanNextBtn", self.loanPage >= pageCount)
-    self:setTextOf("emptyLoansText", g_i18n:getText(showingClosed and "bank_no_closed_loans" or "bank_no_loans"))
-    self:setVisibleOf("emptyLoansText", #displayedLoans == 0)
-    self:setVisibleOf("dashboardView", self.currentView == "dashboard")
-    self:setVisibleOf("loanFormView", self.currentView == "loanForm")
-    self.rowLoans = {}
-
-    for i = 1, BankMenuFrame.MAX_ROWS do
-        local loanIndex = showingClosed
-            and (#displayedLoans - (self.loanPage - 1) * BankMenuFrame.MAX_ROWS - i + 1)
-            or ((self.loanPage - 1) * BankMenuFrame.MAX_ROWS + i)
-        local loan = displayedLoans[loanIndex]
-        self.rowLoans[i] = loan
-        local buttonId = "payoffBtn" .. i
-        local backgroundId = "loanRowBg" .. i
-
-        if loan ~= nil then
-            local typeText = g_i18n:getText("bank_loan_type")
-            local amountText = fmt(loan.principal or loan.remaining or 0)
-            local monthlyText = fmt(loan.installment or 0)
-            local rateText = string.format("%.1f%%", (loan.annualRate or 0) * 100)
-            local termText = showingClosed
-                and "-"
-                or string.format(g_i18n:getText("bank_term_value"), loan.monthsLeft or 0)
-            local remainingText = fmt(showingClosed and (loan.paidAmount or 0) or (loan.remaining or 0))
-            local statusText
-            if showingClosed then
-                statusText = loan.closedType == BankManager.CLOSED_LOAN_PAID_EARLY
-                    and g_i18n:getText("bank_closed_early")
-                    or g_i18n:getText("bank_closed_complete")
-            else
-                statusText = (loan.missed or 0) > 0
-                    and g_i18n:getText("bank_status_overdue")
-                    or g_i18n:getText("bank_status_active")
-            end
-            self:setTextOf("loanType" .. i, typeText)
-            self:setTextOf("loanAmount" .. i, amountText)
-            self:setTextOf("loanMonthly" .. i, monthlyText)
-            self:setTextOf("loanRate" .. i, rateText)
-            self:setTextOf("loanTerm" .. i, termText)
-            self:setTextOf("loanRemaining" .. i, remainingText)
-            self:setTextOf("loanStatus" .. i, statusText)
-            self:setVisibleOf("loanType" .. i, true)
-            self:setVisibleOf("loanAmount" .. i, true)
-            self:setVisibleOf("loanMonthly" .. i, true)
-            self:setVisibleOf("loanRate" .. i, true)
-            self:setVisibleOf("loanTerm" .. i, true)
-            self:setVisibleOf("loanRemaining" .. i, true)
-            self:setVisibleOf("loanStatus" .. i, true)
-            self:setVisibleOf(buttonId, not showingClosed)
-            self:setVisibleOf(backgroundId, true)
-        else
-            self:setVisibleOf("loanType" .. i, false)
-            self:setVisibleOf("loanAmount" .. i, false)
-            self:setVisibleOf("loanMonthly" .. i, false)
-            self:setVisibleOf("loanRate" .. i, false)
-            self:setVisibleOf("loanTerm" .. i, false)
-            self:setVisibleOf("loanRemaining" .. i, false)
-            self:setVisibleOf("loanStatus" .. i, false)
-            self:setVisibleOf(buttonId, false)
-            self:setVisibleOf(backgroundId, false)
+function BankMenuFrame:updateBalanceDisplay(farm)
+    if farm == nil or self.currentBalanceText == nil then
+        return
+    end
+    if farm:getBalance() <= -1 then
+        self.currentBalanceText:applyProfile(ShopMenu.GUI_PROFILE.SHOP_MONEY_NEGATIVE, nil, true)
+    else
+        self.currentBalanceText:applyProfile(ShopMenu.GUI_PROFILE.SHOP_MONEY, nil, true)
+    end
+    self.currentBalanceText:setText(BankManager.formatMoney(farm:getBalance()))
+    if self.shopMoneyBox ~= nil then
+        self.shopMoneyBox:invalidateLayout()
+        if self.shopMoneyBoxBg ~= nil and self.shopMoneyBox.flowSizes ~= nil then
+            self.shopMoneyBoxBg:setSize(self.shopMoneyBox.flowSizes[1] + 60 * g_pixelSizeScaledX)
         end
     end
+end
+
+function BankMenuFrame:refreshList()
+    self.selectedLoan = nil
+    self.loansList = {}
+
+    local bm = g_bankManager
+    if bm ~= nil then
+        local farmId = g_currentMission:getFarmId()
+        local source = self.currentTab == BankMenuFrame.TAB.ACTIVE
+            and bm:getFarmLoans(farmId)
+            or bm:getClosedLoans(farmId)
+        for _, loan in ipairs(source) do
+            table.insert(self.loansList, loan)
+        end
+        table.sort(self.loansList, function(a, b)
+            return (a.id or 0) > (b.id or 0)
+        end)
+    end
+
+    if self.currentTab == BankMenuFrame.TAB.ACTIVE and self.listLoans ~= nil then
+        self.listLoans:reloadData()
+    elseif self.currentTab == BankMenuFrame.TAB.CLOSED and self.listPaidLoans ~= nil then
+        self.listPaidLoans:reloadData()
+    end
+
+    self:updateEmptyState()
+    self:refreshLoanSliders()
+    self:updateSliderVisibility()
+    self:updateButtonStates()
+end
+
+function BankMenuFrame:updateSubCategoryPages()
+    if self.subCategoryPaging == nil then
+        return
+    end
+    self.currentTab = self.subCategoryPaging:getState()
+    self:refreshList()
+    self:updateViewVisibility()
+end
+
+function BankMenuFrame:updateViewVisibility()
+    local showDashboard = self.currentView == "dashboard"
+    self:setVisibleOf("subCategoryBox", showDashboard)
+    self:setVisibleOf("subCategoryPaging", showDashboard)
+    self:setVisibleOf("dashboardTopSeparator", showDashboard)
+    self:setVisibleOf("dashboardStrip", showDashboard)
+    self:setVisibleOf("loanFormView", not showDashboard)
+
+    for index, page in pairs(self.subCategoryPages or {}) do
+        page:setVisible(showDashboard and index == self.currentTab)
+    end
+    self:updateSliderVisibility()
+end
+
+function BankMenuFrame:updateEmptyState()
+    local hasLoans = #self.loansList > 0
+    if self.currentTab == BankMenuFrame.TAB.ACTIVE then
+        self:setVisibleOf("loansListContainer", hasLoans)
+        self:setVisibleOf("emptyListContainer", not hasLoans)
+    else
+        self:setVisibleOf("paidLoansListContainer", hasLoans)
+        self:setVisibleOf("emptyPaidListContainer", not hasLoans)
+    end
+end
+
+function BankMenuFrame:updateButtonStates()
+    if self.btnPayoff == nil then
+        return
+    end
+    self.btnPayoff.disabled = self.currentView ~= "dashboard"
+        or self.currentTab ~= BankMenuFrame.TAB.ACTIVE
+        or self.selectedLoan == nil
+    if self.setMenuButtonInfoDirty ~= nil then
+        self:setMenuButtonInfoDirty()
+    end
+end
+
+function BankMenuFrame:refreshLoanSliders()
+    if self.loansSlider ~= nil and self.listLoans ~= nil then
+        self.loansSlider:onBindUpdate(self.listLoans)
+    end
+    if self.paidSlider ~= nil and self.listPaidLoans ~= nil then
+        self.paidSlider:onBindUpdate(self.listPaidLoans)
+    end
+end
+
+function BankMenuFrame:updateSliderVisibility()
+    local showDashboard = self.currentView == "dashboard"
+    self:setVisibleOf("loansSliderBox", showDashboard and self.currentTab == BankMenuFrame.TAB.ACTIVE)
+    self:setVisibleOf("paidSliderBox", showDashboard and self.currentTab == BankMenuFrame.TAB.CLOSED)
+end
+
+function BankMenuFrame:updateScreenEdgeSliders()
+    for _, sliderBox in pairs({self.loansSliderBox, self.paidSliderBox}) do
+        if sliderBox ~= nil
+            and sliderBox.absPosition ~= nil
+            and sliderBox.absPosition[2] ~= nil
+            and sliderBox.absSize ~= nil
+            and sliderBox.absSize[1] ~= nil then
+            sliderBox:updateAbsolutePosition()
+            local x = 1 - sliderBox.absSize[1] - BankMenuFrame.SCREEN_EDGE_SLIDER_MARGIN_X
+            local y = sliderBox.absPosition[2]
+                + BankMenuFrame.NATIVE_DOCKED_SLIDER_OFFSET_Y * (g_pixelSizeScaledY or 0)
+            sliderBox:setAbsolutePosition(x, y)
+            for _, child in ipairs(sliderBox.elements or {}) do
+                child:updateAbsolutePosition()
+            end
+        end
+    end
+end
+
+function BankMenuFrame:getNumberOfSections()
+    return 1
+end
+
+function BankMenuFrame:getNumberOfItemsInSection(list, section)
+    return #self.loansList
+end
+
+function BankMenuFrame:getTitleForSectionHeader(list, section)
+    return nil
+end
+
+function BankMenuFrame:getSectionHeaderHeight(list, section)
+    return 0
+end
+
+function BankMenuFrame:populateCellForItemInSection(list, section, index, cell)
+    local loan = self.loansList[index]
+    if loan == nil then
+        return
+    end
+
+    local closed = self.currentTab == BankMenuFrame.TAB.CLOSED
+    local typeText = g_i18n:getText("bank_loan_type")
+    local amountText = BankManager.formatMoney(loan.principal or loan.remaining or 0)
+    local monthlyText = BankManager.formatMoney(loan.installment or 0)
+    local rateText = string.format("%.2f%%", (loan.annualRate or 0) * 100)
+    local durationText = closed
+        and "-"
+        or string.format(g_i18n:getText("bank_term_value"), loan.monthsLeft or 0)
+    local remainingText = BankManager.formatMoney(
+        closed and (loan.paidAmount or 0) or (loan.remaining or 0)
+    )
+    local statusText
+    local statusColor
+    if closed then
+        statusText = loan.closedType == BankManager.CLOSED_LOAN_PAID_EARLY
+            and g_i18n:getText("bank_closed_early")
+            or g_i18n:getText("bank_closed_complete")
+        statusColor = BankMenuFrame.COLOR_CLOSED
+    elseif (loan.missed or 0) > 0 then
+        statusText = g_i18n:getText("bank_status_overdue")
+        statusColor = BankMenuFrame.COLOR_OVERDUE
+    else
+        statusText = g_i18n:getText("bank_status_active")
+        statusColor = BankMenuFrame.COLOR_ACTIVE
+    end
+
+    local values = {
+        cellType = typeText,
+        cellAmount = amountText,
+        cellMonthly = monthlyText,
+        cellRate = rateText,
+        cellDuration = durationText,
+        cellRest = remainingText,
+        cellStatus = statusText,
+    }
+    for name, value in pairs(values) do
+        local element = cell:getDescendantByName(name)
+        if element ~= nil then
+            element:setText(value)
+            if name == "cellStatus" then
+                element:setTextColor(unpack(statusColor))
+            end
+        end
+    end
+end
+
+function BankMenuFrame:onListSelectionChanged(list, section, index)
+    if self.currentTab == BankMenuFrame.TAB.ACTIVE and index > 0 and index <= #self.loansList then
+        self.selectedLoan = self.loansList[index]
+    else
+        self.selectedLoan = nil
+    end
+    self:updateButtonStates()
 end
 
 ---------------------------------------------------------------------
@@ -439,46 +627,14 @@ function BankMenuFrame:onClickAmountUp()
     self:safeRefresh()
 end
 
-function BankMenuFrame:setLoanView(view)
-    if view ~= self.loanView then
-        self.loanView = view
-        self.loanPage = 1
-        self:safeRefresh()
-    end
+function BankMenuFrame:onClickTabActive()
+    self.subCategoryPaging:setState(BankMenuFrame.TAB.ACTIVE, true)
+    self:setMenuButtonInfoDirty()
 end
 
-function BankMenuFrame:changeLoansPage(offset)
-    local farmId = g_currentMission:getFarmId()
-    local loans = self.loanView == "closed"
-        and g_bankManager:getClosedLoans(farmId)
-        or g_bankManager:getFarmLoans(farmId)
-    local pageCount = math.max(1, math.ceil(#loans / BankMenuFrame.MAX_ROWS))
-    self.loanPage = math.max(1, math.min(self.loanPage + offset, pageCount))
-    self:safeRefresh()
-end
-
-function BankMenuFrame:onClickActiveLoansTab()
-    self:setLoanView("active")
-end
-
-function BankMenuFrame:onClickClosedLoansTab()
-    self:setLoanView("closed")
-end
-
-function BankMenuFrame:onClickPreviousLoansPage()
-    self:changeLoansPage(-1)
-end
-
-function BankMenuFrame:onClickNextLoansPage()
-    self:changeLoansPage(1)
-end
-
-function BankMenuFrame:onClickPreviousLoansTab()
-    self:setLoanView(self.loanView == "active" and "closed" or "active")
-end
-
-function BankMenuFrame:onClickNextLoansTab()
-    self:setLoanView(self.loanView == "active" and "closed" or "active")
+function BankMenuFrame:onClickTabClosed()
+    self.subCategoryPaging:setState(BankMenuFrame.TAB.CLOSED, true)
+    self:setMenuButtonInfoDirty()
 end
 
 function BankMenuFrame:onClickNewLoan()
@@ -527,15 +683,8 @@ function BankMenuFrame:onClickBorrow()
     g_bankManager:request(BankManager.ACTION_BORROW, self.amount, BankManager.TERMS[self.termIndex])
 end
 
-function BankMenuFrame:payoffRow(index)
-    local loan = self.rowLoans[index]
-    if loan ~= nil and self.loanView == "active" then
-        g_bankManager:request(BankManager.ACTION_PAYOFF, loan.id, 0)
+function BankMenuFrame:onClickPayoffSelected()
+    if self.selectedLoan ~= nil and self.currentTab == BankMenuFrame.TAB.ACTIVE then
+        g_bankManager:request(BankManager.ACTION_PAYOFF, self.selectedLoan.id, 0)
     end
 end
-
-function BankMenuFrame:onClickPayoff1() self:payoffRow(1) end
-function BankMenuFrame:onClickPayoff2() self:payoffRow(2) end
-function BankMenuFrame:onClickPayoff3() self:payoffRow(3) end
-function BankMenuFrame:onClickPayoff4() self:payoffRow(4) end
-function BankMenuFrame:onClickPayoff5() self:payoffRow(5) end

@@ -4,7 +4,7 @@
     <Profiles>
         <Profile name="bankPage" extends="emptyPanel" with="anchorBottomLeft">
             <size value="1312px 580px"/>
-            <position value="226px 50px"/>
+            <position value="80px 200px"/>
         </Profile>
 
         <Profile name="bankContent" extends="emptyPanel" with="anchorBottomLeft">
@@ -210,6 +210,133 @@
 
         <Profile name="bankTableStatus" extends="bankTableCell">
             <textColor value="0.722 0.976 0 1"/>
+        </Profile>
+
+        <Profile name="bankListContentArea" extends="emptyPanel" with="anchorTopStretchingX pivotTopLeft"/>
+
+        <Profile name="bankHeaderIcon" extends="fs25_menuHeaderIcon">
+            <imageSliceId value="fs25Bank.menuIcon"/>
+        </Profile>
+
+        <Profile name="bankDashboardStrip" extends="emptyPanel" with="anchorTopLeft">
+            <size value="1550px 130px"/>
+            <position value="0px 0px"/>
+        </Profile>
+
+        <Profile name="bankDashCard" extends="emptyPanel" with="anchorTopLeft">
+            <size value="370px 100px"/>
+        </Profile>
+
+        <Profile name="bankDashCardBg" extends="baseReference" with="anchorTopLeft">
+            <size value="370px 100px"/>
+            <color value="0 0 0 0.70"/>
+            <cornerSize value="0.35"/>
+        </Profile>
+
+        <Profile name="bankDashCardLabel" extends="baseReference" with="anchorTopLeft">
+            <size value="370px 20px"/>
+            <textSize value="18px"/>
+            <textBold value="true"/>
+            <textUpperCase value="true"/>
+            <textColor value="$preset_colorWhite_50"/>
+            <textAlignment value="center"/>
+            <textVerticalAlignment value="middle"/>
+        </Profile>
+
+        <Profile name="bankDashCardValue" extends="baseReference" with="anchorTopLeft">
+            <size value="370px 34px"/>
+            <textSize value="24px"/>
+            <textBold value="true"/>
+            <textColor value="$preset_fs25_colorMainLight"/>
+            <textAlignment value="center"/>
+            <textVerticalAlignment value="middle"/>
+        </Profile>
+
+        <Profile name="bankDashCardValueHL" extends="bankDashCardValue">
+            <textColor value="$preset_fs25_colorMainHighlight"/>
+        </Profile>
+
+        <Profile name="bankDashCardSub" extends="baseReference" with="anchorTopLeft">
+            <size value="370px 14px"/>
+            <textSize value="11px"/>
+            <textColor value="$preset_colorWhite_50"/>
+            <textAlignment value="center"/>
+            <textVerticalAlignment value="middle"/>
+        </Profile>
+
+        <Profile name="bankDashSpacer" extends="fs25_lineSeparatorTopHighlighted" with="anchorTopLeft">
+            <size value="1555px 2dp"/>
+            <imageColor value="$preset_fs25_colorGreyLight_50"/>
+        </Profile>
+
+        <Profile name="bankLoansList" extends="emptyPanel" with="pivotTopLeft">
+            <position value="0px -190px"/>
+            <size value="1540px 600px"/>
+        </Profile>
+
+        <Profile name="bankLoansListItem" extends="fs25_calendarListItem">
+            <height value="40px"/>
+            <imageColor value="$preset_fs25_colorGrey"/>
+            <imageSelectedColor value="$preset_fs25_colorMainHighlight"/>
+            <alternateBackgroundColor value="$preset_fs25_colorGreyDark_50"/>
+        </Profile>
+
+        <Profile name="bankListItemGradient" extends="fs25_calendarListItemBg">
+            <imageColor value="0.045 0.045 0.045 0.96"/>
+            <startImageColor value="0.065 0.065 0.065 0.96"/>
+            <endImageColor value="0.035 0.035 0.035 0.96"/>
+            <imageSelectedColor value="$preset_fs25_colorMainHighlight"/>
+            <startImageSelectedColor value="$preset_fs25_colorMainHighlight"/>
+            <endImageSelectedColor value="$preset_fs25_colorMainHighlight"/>
+        </Profile>
+
+        <Profile name="bankColumnHeader" extends="baseReference" with="anchorTopLeft">
+            <imageColor value="0 0 0 0"/>
+            <textSize value="15px"/>
+            <textBold value="true"/>
+            <textUpperCase value="true"/>
+            <textColor value="$preset_colorWhite_50"/>
+            <textAlignment value="center"/>
+            <textVerticalAlignment value="middle"/>
+        </Profile>
+
+        <Profile name="bankRowCellLeft" extends="baseReference" with="anchorStretchingYLeft">
+            <textSize value="16px"/>
+            <textAlignment value="center"/>
+            <textVerticalAlignment value="middle"/>
+            <textColor value="$preset_fs25_colorMainLight"/>
+            <textSelectedColor value="$preset_fs25_colorMainDark"/>
+            <textDisabledColor value="$preset_colorDisabled"/>
+        </Profile>
+
+        <Profile name="bankRowCellCenter" extends="bankRowCellLeft">
+            <textBold value="true"/>
+        </Profile>
+
+        <Profile name="bankRowCellRight" extends="baseReference" with="anchorStretchingYLeft">
+            <textBold value="true"/>
+            <textSize value="16px"/>
+            <textAlignment value="center"/>
+            <textVerticalAlignment value="middle"/>
+            <textColor value="$preset_fs25_colorMainLight"/>
+            <textSelectedColor value="$preset_fs25_colorMainDark"/>
+            <textDisabledColor value="$preset_colorDisabled"/>
+        </Profile>
+
+        <Profile name="bankSliderDockedBg" extends="fs25_sliderDockedBg" with="anchorTopRight"/>
+        <Profile name="bankSliderDockedBox" extends="fs25_sliderDockedBox"/>
+        <Profile name="bankSliderDocked" extends="fs25_helpLineSlider">
+            <startImageColor value="$preset_fs25_colorMainHighlight"/>
+            <sliderImageColor value="$preset_fs25_colorMainHighlight"/>
+            <endImageColor value="$preset_fs25_colorMainHighlight"/>
+        </Profile>
+
+        <Profile name="bankEmptyStateText" extends="baseReference" with="anchorTopLeft">
+            <size value="400px 40px"/>
+            <textSize value="18px"/>
+            <textColor value="0.45 0.45 0.45 1"/>
+            <textAlignment value="center"/>
+            <textVerticalAlignment value="middle"/>
         </Profile>
     </Profiles>
 </GUIProfiles>

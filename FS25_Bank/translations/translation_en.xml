@@ -62,11 +62,15 @@
         <text name="bank_closed_row" text="Original %s · closing payment %s · %s · %.1f%% p.a."/>
         <text name="bank_closed_early" text="Paid off early"/>
         <text name="bank_closed_complete" text="Completed"/>
-        <text name="bank_rate_current_subtitle" text="Selected term"/>
-        <text name="bank_available_subtitle" text="Available for new loans"/>
+        <text name="bank_rate_current_subtitle" text="(selected term)"/>
+        <text name="bank_available_subtitle" text="(subject to approval)"/>
         <text name="bank_debt_usage" text="%d%% of credit limit used"/>
         <text name="bank_monthly_total_label" text="Monthly installments"/>
-        <text name="bank_monthly_subtitle" text="Combined monthly total"/>
+        <text name="bank_monthly_subtitle" text="(total monthly debit)"/>
+        <text name="bank_dash_outstanding" text="Current outstanding balance"/>
+        <text name="bank_dash_monthly" text="Total monthly installments"/>
+        <text name="bank_dash_rate" text="Current rate"/>
+        <text name="bank_balance_header" text="BALANCE:"/>
         <text name="bank_col_type" text="Type"/>
         <text name="bank_col_amount" text="Original amount"/>
         <text name="bank_col_monthly" text="Monthly payment"/>

@@ -62,11 +62,15 @@
         <text name="bank_closed_row" text="Original %s · fechamento %s · %s · %.1f%% a.a."/>
         <text name="bank_closed_early" text="Quitado antecipadamente"/>
         <text name="bank_closed_complete" text="Concluído"/>
-        <text name="bank_rate_current_subtitle" text="Prazo selecionado"/>
-        <text name="bank_available_subtitle" text="Disponível para novos empréstimos"/>
+        <text name="bank_rate_current_subtitle" text="(prazo selecionado)"/>
+        <text name="bank_available_subtitle" text="(sujeito a aprovação)"/>
         <text name="bank_debt_usage" text="%d%% do limite de crédito usado"/>
         <text name="bank_monthly_total_label" text="Parcelas mensais"/>
-        <text name="bank_monthly_subtitle" text="Total combinado por mês"/>
+        <text name="bank_monthly_subtitle" text="(débito mensal total)"/>
+        <text name="bank_dash_outstanding" text="Saldo devedor atual"/>
+        <text name="bank_dash_monthly" text="Total de parcelas mensais"/>
+        <text name="bank_dash_rate" text="Taxa atual"/>
+        <text name="bank_balance_header" text="SALDO:"/>
         <text name="bank_col_type" text="Tipo"/>
         <text name="bank_col_amount" text="Valor inicial"/>
         <text name="bank_col_monthly" text="Parcela mensal"/>

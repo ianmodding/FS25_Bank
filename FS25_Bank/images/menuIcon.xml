@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<texture>
+    <meta>
+        <filename>menuIcon.png</filename>
+        <size width="1024" height="1024"/>
+    </meta>
+    <slices>
+        <slice id="menuIcon" uvs="0px 0px 1024px 1024px"/>
+    </slices>
+</texture>
