@@ -48,11 +48,15 @@ BankUI.contextActive = false
 BankUI.isOpen = false
 BankUI.amount = 50000
 BankUI.termIndex = 2 -- 12 meses
+BankUI.investmentAmount = 50000
+BankUI.investmentTermIndex = 3 -- 12 meses
+BankUI.activeTab = "loans"
 BankUI.mouseX = 0
 BankUI.mouseY = 0
 BankUI.hitRects = {}
 BankUI.available = 0
 BankUI.debt = 0
+BankUI.balance = 0
 BankUI.refreshTimer = 0
 BankUI.anim = 0
 BankUI.alpha = 1
@@ -141,6 +145,8 @@ function BankUI:refreshData()
     local farmId = g_currentMission:getFarmId()
     self.available = g_bankManager:getAvailableCredit(farmId)
     self.debt = g_bankManager:getTotalDebt(farmId)
+    local farm = g_farmManager:getFarmById(farmId)
+    self.balance = farm ~= nil and math.max(0, farm:getBalance()) or 0
 end
 
 function BankUI:update(dt)
@@ -168,10 +174,17 @@ function BankUI:setAmountFromMouse()
         return
     end
     local ratio = math.max(0, math.min(1, (self.mouseX - s.x) / s.w))
-    local raw = BankManager.MIN_AMOUNT + ratio * (BankManager.MAX_AMOUNT - BankManager.MIN_AMOUNT)
     local step = BankManager.AMOUNT_STEP
-    local top = math.min(BankManager.MAX_AMOUNT, self.maxAllowed or BankManager.MAX_AMOUNT)
-    self.amount = math.max(BankManager.MIN_AMOUNT, math.min(top, math.floor(raw / step + 0.5) * step))
+    local top = self.activeTab == "investments"
+        and math.min(BankManager.MAX_AMOUNT, math.floor(self.balance / step) * step)
+        or math.min(BankManager.MAX_AMOUNT, self.maxAllowed or BankManager.MAX_AMOUNT)
+    local raw = BankManager.MIN_AMOUNT + ratio * (top - BankManager.MIN_AMOUNT)
+    local amount = math.max(BankManager.MIN_AMOUNT, math.min(top, math.floor(raw / step + 0.5) * step))
+    if self.activeTab == "investments" then
+        self.investmentAmount = amount
+    else
+        self.amount = amount
+    end
 end
 
 function BankUI:mouseEvent(posX, posY, isDown, isUp, button)
@@ -214,12 +227,36 @@ function BankUI:onClick(id)
     local bm = g_bankManager
     if id == "close" then
         self:close()
+    elseif id == "tabLoans" then
+        self.activeTab = "loans"
+    elseif id == "tabInvestments" then
+        self.activeTab = "investments"
+    elseif id == "invest" then
+        bm:request(BankManager.ACTION_INVEST, self.investmentAmount, BankManager.INVESTMENT_TERMS[self.investmentTermIndex])
     elseif id == "amountDown" then
-        self.amount = math.max(BankManager.MIN_AMOUNT, self.amount - BankManager.AMOUNT_STEP)
+        if self.activeTab == "investments" then
+            self.investmentAmount = math.max(BankManager.MIN_AMOUNT, self.investmentAmount - BankManager.AMOUNT_STEP)
+        else
+            self.amount = math.max(BankManager.MIN_AMOUNT, self.amount - BankManager.AMOUNT_STEP)
+        end
     elseif id == "amountUp" then
-        self.amount = math.min(math.min(BankManager.MAX_AMOUNT, self.maxAllowed), self.amount + BankManager.AMOUNT_STEP)
+        if self.activeTab == "investments" then
+            local maxAmount = math.min(BankManager.MAX_AMOUNT, math.floor(self.balance / BankManager.AMOUNT_STEP) * BankManager.AMOUNT_STEP)
+            self.investmentAmount = math.min(maxAmount, self.investmentAmount + BankManager.AMOUNT_STEP)
+        else
+            self.amount = math.min(math.min(BankManager.MAX_AMOUNT, self.maxAllowed), self.amount + BankManager.AMOUNT_STEP)
+        end
     elseif string.sub(id, 1, 3) == "amt" then
-        self.amount = tonumber(string.sub(id, 4))
+        local amount = tonumber(string.sub(id, 4))
+        if amount ~= nil then
+            if self.activeTab == "investments" then
+                self.investmentAmount = amount
+            else
+                self.amount = amount
+            end
+        end
+    elseif string.sub(id, 1, 10) == "investTerm" then
+        self.investmentTermIndex = tonumber(string.sub(id, 11))
     elseif string.sub(id, 1, 4) == "term" then
         self.termIndex = tonumber(string.sub(id, 5))
     elseif id == "borrow" then
@@ -365,6 +402,143 @@ function BankUI:draw()
     end
 end
 
+function BankUI:drawInvestmentPanel(ox, oy, W, farmId)
+    local bm = g_bankManager
+    local farm = g_farmManager:getFarmById(farmId)
+    if bm == nil or farm == nil then
+        return
+    end
+
+    local T = function(key) return g_i18n:getText(key) end
+    local fmt = BankManager.formatMoney
+    local investments = bm:getInvestments(farmId)
+    local maxAmount = math.min(
+        BankManager.MAX_AMOUNT,
+        math.floor(math.max(farm:getBalance(), 0) / BankManager.AMOUNT_STEP) * BankManager.AMOUNT_STEP
+    )
+    if maxAmount >= BankManager.MIN_AMOUNT then
+        self.investmentAmount = math.min(self.investmentAmount, maxAmount)
+    else
+        self.investmentAmount = BankManager.MIN_AMOUNT
+    end
+
+    local termMonths = BankManager.INVESTMENT_TERMS[self.investmentTermIndex]
+    local annualRate = BankManager.INVESTMENT_RATES[termMonths]
+    local maturityValue = math.floor(self.investmentAmount * (1 + annualRate / 12) ^ termMonths + 0.5)
+    local profit = maturityValue - self.investmentAmount
+    local canInvest = maxAmount >= BankManager.MIN_AMOUNT
+        and #investments < BankManager.MAX_INVESTMENTS_PER_FARM
+        and self.investmentAmount <= maxAmount
+    local investmentSlotsUsed = #investments / BankManager.MAX_INVESTMENTS_PER_FARM
+
+    local nx, nw = ox + 24, W - 48
+    local ny = oy + 272
+    self:roundRect(nx, ny, nw, 224, 14, COLOR.card)
+    self:text(nx + 24, ny + 200, 22, T("bank_new_investment"), COLOR.green, RenderText.ALIGN_LEFT, true)
+    if #investments >= BankManager.MAX_INVESTMENTS_PER_FARM then
+        self:text(nx + nw - 24, ny + 200, 15, T("bank_investment_limit"), COLOR.warn, RenderText.ALIGN_RIGHT, true)
+    elseif maxAmount < BankManager.MIN_AMOUNT then
+        self:text(nx + nw - 24, ny + 200, 15, T("bank_investment_insufficient"), COLOR.warn, RenderText.ALIGN_RIGHT, true)
+    else
+        self:text(nx + nw - 24, ny + 200, 16, string.format(
+            T("bank_investment_estimate"),
+            fmt(maturityValue),
+            fmt(profit),
+            annualRate * 100
+        ), COLOR.muted, RenderText.ALIGN_RIGHT)
+    end
+    self:text(nx + 24, ny + 178, 14, T("bank_investment_lock"), COLOR.muted)
+    self:text(nx + 24, ny + 145, 44, fmt(self.investmentAmount), COLOR.white, RenderText.ALIGN_LEFT, true)
+    self:button("amountDown", nx + nw - 132, ny + 125, 48, 40, T("bank_minus"), self.investmentAmount > BankManager.MIN_AMOUNT, "ghost", 26, 10)
+    self:button("amountUp", nx + nw - 72, ny + 125, 48, 40, T("bank_plus"), self.investmentAmount < maxAmount, "ghost", 26, 10)
+
+    local tx, ty, tw = nx + 24, ny + 100, nw - 48
+    local ratio = maxAmount > BankManager.MIN_AMOUNT
+        and (self.investmentAmount - BankManager.MIN_AMOUNT) / (maxAmount - BankManager.MIN_AMOUNT)
+        or 0
+    self:bar(tx, ty, tw, 10, ratio, canInvest and COLOR.accent or COLOR.mutedOff)
+    local handleX = tx + ratio * tw - 12
+    self:roundRect(handleX - 2, ty - 7, 28, 28, 14, {0, 0, 0, 0.35})
+    self:roundRect(handleX, ty - 5, 24, 24, 12, COLOR.white)
+    self.slider = {x = tx, y = ty, w = tw}
+    table.insert(self.hitRects, {id = "slider", x = tx - 12, y = ty - 16, w = tw + 24, h = 44})
+
+    local quickAmounts = BankUI.QUICK_AMOUNTS
+    local gap = 12
+    local chipWidth = (tw - (#quickAmounts - 1) * gap) / #quickAmounts
+    for index, amount in ipairs(quickAmounts) do
+        self:chip(
+            "amt" .. amount,
+            tx + (index - 1) * (chipWidth + gap),
+            ny + 52,
+            chipWidth,
+            36,
+            fmt(amount),
+            self.investmentAmount == amount,
+            amount <= maxAmount
+        )
+    end
+
+    self:text(nx + 24, ny + 26, 18, T("bank_term"), COLOR.muted)
+    local firstTermX = nx + 130
+    local termCount = #BankManager.INVESTMENT_TERMS
+    local termWidth = (nw - 154 - (termCount - 1) * gap) / termCount
+    for index, months in ipairs(BankManager.INVESTMENT_TERMS) do
+        local x = firstTermX + (index - 1) * (termWidth + gap)
+        self:chip(
+            "investTerm" .. index,
+            x,
+            ny + 8,
+            termWidth,
+            32,
+            string.format(T("bank_term_value"), months),
+            self.investmentTermIndex == index
+        )
+    end
+
+    local listY, listHeight = oy + 24, 232
+    self:roundRect(nx, listY, nw, listHeight, 14, COLOR.card)
+    self:text(nx + 24, listY + 208, 22, T("bank_my_investments"), COLOR.green, RenderText.ALIGN_LEFT, true)
+    self:text(nx + nw - 24, listY + 208, 16, string.format(
+        T("bank_investment_count"),
+        #investments
+    ), COLOR.muted, RenderText.ALIGN_RIGHT)
+
+    if #investments == 0 then
+        self:text(nx + nw / 2, listY + 105, 20, T("bank_no_investments"), COLOR.muted, RenderText.ALIGN_CENTER)
+    else
+        self:text(nx + 32, listY + 184, 14, T("bank_amount"), COLOR.muted)
+        self:text(nx + 320, listY + 184, 14, T("bank_term"), COLOR.muted)
+        self:text(nx + nw - 32, listY + 184, 14, T("bank_investment_maturity_value"), COLOR.muted, RenderText.ALIGN_RIGHT)
+
+        for index = 1, math.min(#investments, BankManager.MAX_INVESTMENTS_PER_FARM) do
+            local investment = investments[index]
+            local rowY = listY + 150 - (index - 1) * 32
+            self:roundRect(nx + 20, rowY, nw - 40, 28, 8, COLOR.row)
+            self:text(nx + 32, rowY + 14, 16, fmt(investment.principal), COLOR.white, RenderText.ALIGN_LEFT, true)
+            self:text(nx + 320, rowY + 14, 15, string.format(
+                T("bank_investment_term_left"),
+                investment.monthsLeft,
+                investment.annualRate * 100
+            ), COLOR.muted)
+            self:text(nx + nw - 32, rowY + 14, 16, fmt(investment.maturityValue), COLOR.green, RenderText.ALIGN_RIGHT, true)
+        end
+    end
+
+    self:button(
+        "invest",
+        nx + nw - 184,
+        ny + 14,
+        160,
+        46,
+        T("bank_invest"),
+        canInvest,
+        "accent",
+        20,
+        12
+    )
+end
+
 function BankUI:drawPanel()
     local bm = g_bankManager
     local farmId = g_currentMission:getFarmId()
@@ -386,6 +560,12 @@ function BankUI:drawPanel()
     local installment = BankManager.calcInstallment(self.amount, rate, months)
     local totalPay = installment * months
     local loans = bm:getFarmLoans(farmId)
+    local investments = bm:getInvestments(farmId)
+    local investedPrincipal = 0
+    for _, investment in ipairs(investments) do
+        investedPrincipal = investedPrincipal + investment.principal
+    end
+    local isInvestmentsTab = self.activeTab == "investments"
     local score = bm:getScore(farmId)
     self.maxAllowed = bm:getMaxLoanAmount(farmId)
     if self.amount > self.maxAllowed then
@@ -429,11 +609,27 @@ function BankUI:drawPanel()
     -- credito disponivel
     local x1 = ox + 24
     self:roundRect(x1, sy, cardW, 108, 14, COLOR.card)
-    self:text(x1 + 20, sy + 88, 16, T("bank_available"), COLOR.muted)
-    self:text(x1 + 20, sy + 56, 30, fmt(self.available), COLOR.white, RenderText.ALIGN_LEFT, true)
+    self:text(x1 + 20, sy + 88, 16, isInvestmentsTab and T("bank_invested_total") or T("bank_available"), COLOR.muted)
+    self:text(x1 + 20, sy + 56, 30, fmt(isInvestmentsTab and investedPrincipal or self.available), COLOR.white, RenderText.ALIGN_LEFT, true)
     local used = self.debt + self.available > 0 and self.debt / (self.debt + self.available) or 0
-    self:text(x1 + cardW - 20, sy + 88, 15, string.format(T("bank_in_use"), math.floor(used * 100 + 0.5)), COLOR.muted, RenderText.ALIGN_RIGHT)
-    self:bar(x1 + 20, sy + 20, cardW - 40, 8, used, used > 0.8 and COLOR.warn or COLOR.accent)
+    local firstCardSub = isInvestmentsTab
+        and string.format(T("bank_investment_count"), #investments)
+        or string.format(T("bank_in_use"), math.floor(used * 100 + 0.5))
+    local firstCardRatio = used
+    local firstCardColor = used > 0.8 and COLOR.warn or COLOR.accent
+    if isInvestmentsTab then
+        firstCardRatio = investmentSlotsUsed
+        firstCardColor = COLOR.accent
+    end
+    self:text(x1 + cardW - 20, sy + 88, 15, firstCardSub, COLOR.muted, RenderText.ALIGN_RIGHT)
+    self:bar(
+        x1 + 20,
+        sy + 20,
+        cardW - 40,
+        8,
+        firstCardRatio,
+        firstCardColor
+    )
 
     -- divida total
     local x2 = ox + 24 + cardW + 16
@@ -455,6 +651,14 @@ function BankUI:drawPanel()
     self:text(x3 + 20, sy + 56, 30, string.format("%d/%d", score, BankManager.SCORE_MAX), scoreColor, RenderText.ALIGN_LEFT, true)
     self:text(x3 + cardW - 20, sy + 88, 16, T(tierKey), scoreColor, RenderText.ALIGN_RIGHT, true)
     self:bar(x3 + 20, sy + 20, cardW - 40, 8, score / BankManager.SCORE_MAX, scoreColor)
+
+    self:button("tabLoans", ox + 24, oy + 640, 200, 32, T("bank_tab_loans"), true, not isInvestmentsTab and "accent" or "ghost", 17, 8)
+    self:button("tabInvestments", ox + 236, oy + 640, 220, 32, T("bank_tab_investments"), true, isInvestmentsTab and "accent" or "ghost", 17, 8)
+
+    if isInvestmentsTab then
+        self:drawInvestmentPanel(ox, oy, W, farmId)
+        return
+    end
 
     ---------------- novo emprestimo ----------------
     local ny, nh, nw = oy + 272, 224, 620

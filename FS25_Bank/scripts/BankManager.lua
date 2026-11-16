@@ -8,6 +8,7 @@ local BankManager_mt = Class(BankManager)
 
 BankManager.ACTION_BORROW = 1
 BankManager.ACTION_PAYOFF = 2
+BankManager.ACTION_INVEST = 3
 BankManager.CLOSED_LOAN_PAID_EARLY = 1
 BankManager.CLOSED_LOAN_COMPLETED = 2
 
@@ -16,6 +17,14 @@ BankManager.MIN_AMOUNT = 5000
 BankManager.MAX_AMOUNT = 500000
 BankManager.AMOUNT_STEP = 5000
 BankManager.TERMS = {6, 12, 24, 36}          -- prazos em meses (periodos do jogo)
+BankManager.INVESTMENT_TERMS = {3, 6, 12, 24}
+BankManager.INVESTMENT_RATES = {
+    [3] = 0.03,
+    [6] = 0.04,
+    [12] = 0.05,
+    [24] = 0.06
+}
+BankManager.MAX_INVESTMENTS_PER_FARM = 5
 BankManager.BASE_ANNUAL_RATE = 0.08          -- 8% a.a. base
 BankManager.LATE_FEE = 0.02                  -- multa de 2% sobre o saldo devedor
 BankManager.CREDIT_FACTOR = 0.5              -- limite = patrimonio * 50%
@@ -40,7 +49,8 @@ BankManager.LATE_PENALTY_MAX = 190
 
 BankManager.NOTICE = {
     NONE = 0, TAKEN = 1, PAID = 2, MISSED = 3, PAID_OFF = 4,
-    ERR_LIMIT = 5, ERR_FUNDS = 6, ERR_MAX = 7, ERR_INVALID = 8, ERR_SCORE = 9
+    ERR_LIMIT = 5, ERR_FUNDS = 6, ERR_MAX = 7, ERR_INVALID = 8, ERR_SCORE = 9,
+    INVESTED = 10, INVESTMENT_MATURED = 11, ERR_INVEST_MAX = 12
 }
 
 BankManager.NOTICE_TEXT = {
@@ -52,7 +62,10 @@ BankManager.NOTICE_TEXT = {
     [6] = "bank_notice_err_funds",
     [7] = "bank_notice_err_max",
     [8] = "bank_notice_err_invalid",
-    [9] = "bank_notice_err_score"
+    [9] = "bank_notice_err_score",
+    [10] = "bank_notice_invested",
+    [11] = "bank_notice_investment_matured",
+    [12] = "bank_notice_err_invest_max"
 }
 
 function BankManager.new()
@@ -60,7 +73,9 @@ function BankManager.new()
     self.loans = {}        -- [farmId] = { loan, loan, ... }
     self.closedLoans = {}  -- [farmId] = { loan, loan, ... }
     self.scores = {}       -- [farmId] = 0..750
+    self.investments = {}  -- [farmId] = { investment, ... }
     self.nextLoanId = 1
+    self.nextInvestmentId = 1
     return self
 end
 
@@ -93,6 +108,10 @@ end
 
 function BankManager:getClosedLoans(farmId)
     return self.closedLoans[farmId] or {}
+end
+
+function BankManager:getInvestments(farmId)
+    return self.investments[farmId] or {}
 end
 
 function BankManager:archiveLoan(farmId, loan, closedType, paidAmount)
@@ -222,6 +241,8 @@ function BankManager:handleRequest(farmId, action, value, months)
         notice = self:borrow(farmId, value, months)
     elseif action == BankManager.ACTION_PAYOFF then
         notice = self:payoff(farmId, value)
+    elseif action == BankManager.ACTION_INVEST then
+        notice = self:invest(farmId, value, months)
     end
     self:broadcast(farmId, notice)
 end
@@ -290,6 +311,44 @@ function BankManager:payoff(farmId, loanId)
     return N.ERR_INVALID
 end
 
+function BankManager:invest(farmId, amount, months)
+    local N = BankManager.NOTICE
+    if BankManager.INVESTMENT_RATES[months] == nil
+        or amount < BankManager.MIN_AMOUNT
+        or amount > BankManager.MAX_AMOUNT
+        or amount % BankManager.AMOUNT_STEP ~= 0 then
+        return N.ERR_INVALID
+    end
+
+    local farm = g_farmManager:getFarmById(farmId)
+    if farm == nil or farm:getBalance() < amount then
+        return N.ERR_FUNDS
+    end
+
+    local investments = self.investments[farmId]
+    if investments == nil then
+        investments = {}
+        self.investments[farmId] = investments
+    end
+    if #investments >= BankManager.MAX_INVESTMENTS_PER_FARM then
+        return N.ERR_INVEST_MAX
+    end
+
+    local annualRate = BankManager.INVESTMENT_RATES[months]
+    table.insert(investments, {
+        id = self.nextInvestmentId,
+        principal = amount,
+        maturityValue = math.floor(amount * (1 + annualRate / 12) ^ months + 0.5),
+        annualRate = annualRate,
+        termMonths = months,
+        monthsLeft = months
+    })
+    self.nextInvestmentId = self.nextInvestmentId + 1
+    self.scores[farmId] = self:getScore(farmId)
+    g_currentMission:addMoney(-amount, farmId, MoneyType.LOAN, true, true)
+    return N.INVESTED
+end
+
 ---------------------------------------------------------------------
 -- Cobranca mensal (inicio de cada periodo do jogo) - SOMENTE servidor
 ---------------------------------------------------------------------
@@ -299,9 +358,19 @@ function BankManager:onPeriodChanged()
     end
     local N = BankManager.NOTICE
 
-    for farmId, loans in pairs(self.loans) do
+    local farmIds = {}
+    for farmId in pairs(self.loans) do
+        farmIds[farmId] = true
+    end
+    for farmId in pairs(self.investments) do
+        farmIds[farmId] = true
+    end
+
+    for farmId in pairs(farmIds) do
+        local loans = self:getFarmLoans(farmId)
+        local investments = self:getInvestments(farmId)
         local farm = g_farmManager:getFarmById(farmId)
-        if farm ~= nil and #loans > 0 then
+        if farm ~= nil and (#loans > 0 or #investments > 0) then
             local notice = N.NONE
 
             for i = #loans, 1, -1 do
@@ -318,7 +387,7 @@ function BankManager:onPeriodChanged()
                     loan.monthsLeft = loan.monthsLeft - 1
                     self:adjustScore(farmId, loan.missed > 0 and BankManager.SCORE_PAID_AFTER_LATE or BankManager.SCORE_PAID)
                     loan.missed = 0 -- em dia de novo (missed = atrasos consecutivos)
-                    if notice ~= N.MISSED then
+                    if notice ~= N.MISSED and notice ~= N.INVESTMENT_MATURED then
                         notice = N.PAID
                     end
                     if loan.monthsLeft <= 0 or loan.remaining < 1 then
@@ -332,6 +401,18 @@ function BankManager:onPeriodChanged()
                     loan.remaining = (loan.remaining + interest) * (1 + BankManager.LATE_FEE)
                     self:adjustScore(farmId, -penalty)
                     notice = N.MISSED
+                end
+            end
+
+            for i = #investments, 1, -1 do
+                local investment = investments[i]
+                investment.monthsLeft = investment.monthsLeft - 1
+                if investment.monthsLeft <= 0 then
+                    g_currentMission:addMoney(investment.maturityValue, farmId, MoneyType.LOAN, true, true)
+                    table.remove(investments, i)
+                    if notice ~= N.MISSED then
+                        notice = N.INVESTMENT_MATURED
+                    end
                 end
             end
 
@@ -349,17 +430,19 @@ function BankManager:broadcast(farmId, notice)
         self:getFarmLoans(farmId),
         self:getScore(farmId),
         notice,
-        self:getClosedLoans(farmId)
+        self:getClosedLoans(farmId),
+        self:getInvestments(farmId)
     ), false)
     self:notify(farmId, notice)
     self:fireChanged()
 end
 
 -- Chamado nos clientes ao receber dados do servidor
-function BankManager:setFarmData(farmId, loans, score, closedLoans)
+function BankManager:setFarmData(farmId, loans, score, closedLoans, investments)
     self.loans[farmId] = loans
     self.scores[farmId] = score
     self.closedLoans[farmId] = closedLoans or {}
+    self.investments[farmId] = investments or {}
     self:fireChanged()
 end
 
@@ -382,9 +465,12 @@ function BankManager:notify(farmId, notice)
     end
 
     local kind = FSBaseMission.INGAME_NOTIFICATION_INFO
-    if notice == N.TAKEN or notice == N.PAID_OFF then
+    if notice == N.TAKEN or notice == N.PAID_OFF
+        or notice == N.INVESTED or notice == N.INVESTMENT_MATURED then
         kind = FSBaseMission.INGAME_NOTIFICATION_OK
-    elseif notice >= N.MISSED and notice ~= N.PAID_OFF then
+    elseif notice == N.MISSED or notice == N.ERR_LIMIT or notice == N.ERR_FUNDS
+        or notice == N.ERR_MAX or notice == N.ERR_INVALID or notice == N.ERR_SCORE
+        or notice == N.ERR_INVEST_MAX then
         kind = FSBaseMission.INGAME_NOTIFICATION_CRITICAL
     end
     g_currentMission:addIngameNotification(kind, g_i18n:getText(BankManager.NOTICE_TEXT[notice]))
@@ -395,6 +481,7 @@ end
 ---------------------------------------------------------------------
 function BankManager.registerXMLPaths(schema)
     schema:register(XMLValueType.INT, "modernBank#nextLoanId", "Next loan id", 1)
+    schema:register(XMLValueType.INT, "modernBank#nextInvestmentId", "Next investment id", 1)
     schema:register(XMLValueType.INT, "modernBank#scoreScale", "Score scale (100 = saves antigos)", 100)
     schema:register(XMLValueType.INT, "modernBank.farms.farm(?)#farmId", "Farm id")
     schema:register(XMLValueType.INT, "modernBank.farms.farm(?)#score", "Credit score", 50)
@@ -413,6 +500,12 @@ function BankManager.registerXMLPaths(schema)
     schema:register(XMLValueType.INT, "modernBank.farms.farm(?).closedLoan(?)#monthsLeft", "Months left when closed")
     schema:register(XMLValueType.INT, "modernBank.farms.farm(?).closedLoan(?)#missed", "Missed payments when closed", 0)
     schema:register(XMLValueType.INT, "modernBank.farms.farm(?).closedLoan(?)#closedType", "Loan closure type")
+    schema:register(XMLValueType.INT, "modernBank.farms.farm(?).investment(?)#id", "Investment id")
+    schema:register(XMLValueType.FLOAT, "modernBank.farms.farm(?).investment(?)#principal", "Investment principal")
+    schema:register(XMLValueType.FLOAT, "modernBank.farms.farm(?).investment(?)#maturityValue", "Investment maturity value")
+    schema:register(XMLValueType.FLOAT, "modernBank.farms.farm(?).investment(?)#annualRate", "Investment annual rate")
+    schema:register(XMLValueType.INT, "modernBank.farms.farm(?).investment(?)#termMonths", "Investment term in months")
+    schema:register(XMLValueType.INT, "modernBank.farms.farm(?).investment(?)#monthsLeft", "Investment months left")
 end
 
 BankManager.xmlSchema = XMLSchema.new("modernBank")
@@ -437,6 +530,7 @@ function BankManager:save()
     end
 
     xmlFile:setInt("modernBank#nextLoanId", self.nextLoanId)
+    xmlFile:setInt("modernBank#nextInvestmentId", self.nextInvestmentId)
     xmlFile:setInt("modernBank#scoreScale", BankManager.SCORE_MAX)
 
     local i = 0
@@ -467,6 +561,16 @@ function BankManager:save()
             xmlFile:setInt(lKey .. "#missed", loan.missed)
             xmlFile:setInt(lKey .. "#closedType", loan.closedType)
         end
+
+        for j, investment in ipairs(self:getInvestments(farmId)) do
+            local investmentKey = string.format("%s.investment(%d)", fKey, j - 1)
+            xmlFile:setInt(investmentKey .. "#id", investment.id)
+            xmlFile:setFloat(investmentKey .. "#principal", investment.principal)
+            xmlFile:setFloat(investmentKey .. "#maturityValue", investment.maturityValue)
+            xmlFile:setFloat(investmentKey .. "#annualRate", investment.annualRate)
+            xmlFile:setInt(investmentKey .. "#termMonths", investment.termMonths)
+            xmlFile:setInt(investmentKey .. "#monthsLeft", investment.monthsLeft)
+        end
         i = i + 1
     end
 
@@ -485,6 +589,7 @@ function BankManager:load()
     end
 
     self.nextLoanId = xmlFile:getInt("modernBank#nextLoanId", 1)
+    self.nextInvestmentId = xmlFile:getInt("modernBank#nextInvestmentId", 1)
     local savedScale = xmlFile:getInt("modernBank#scoreScale", 100)
 
     xmlFile:iterate("modernBank.farms.farm", function(_, fKey)
@@ -497,6 +602,7 @@ function BankManager:load()
             self.scores[farmId] = math.max(0, math.min(BankManager.SCORE_MAX, savedScore))
             self.loans[farmId] = {}
             self.closedLoans[farmId] = {}
+            self.investments[farmId] = {}
             xmlFile:iterate(fKey .. ".loan", function(_, lKey)
                 table.insert(self.loans[farmId], {
                     id = xmlFile:getInt(lKey .. "#id"),
@@ -518,6 +624,16 @@ function BankManager:load()
                     monthsLeft = xmlFile:getInt(lKey .. "#monthsLeft"),
                     missed = xmlFile:getInt(lKey .. "#missed", 0),
                     closedType = xmlFile:getInt(lKey .. "#closedType", BankManager.CLOSED_LOAN_COMPLETED)
+                })
+            end)
+            xmlFile:iterate(fKey .. ".investment", function(_, investmentKey)
+                table.insert(self.investments[farmId], {
+                    id = xmlFile:getInt(investmentKey .. "#id"),
+                    principal = xmlFile:getFloat(investmentKey .. "#principal"),
+                    maturityValue = xmlFile:getFloat(investmentKey .. "#maturityValue"),
+                    annualRate = xmlFile:getFloat(investmentKey .. "#annualRate"),
+                    termMonths = xmlFile:getInt(investmentKey .. "#termMonths"),
+                    monthsLeft = xmlFile:getInt(investmentKey .. "#monthsLeft")
                 })
             end)
         end

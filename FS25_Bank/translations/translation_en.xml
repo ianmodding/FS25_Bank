@@ -52,6 +52,23 @@
         <text name="bank_row_detail" text="installment %s · %d months · %.1f%% p.a."/>
         <text name="bank_paid" text="%d%% paid"/>
         <text name="bank_notice_err_score" text="Credit denied: your score or overdue installments limit the loan amount."/>
+        <text name="bank_tab_loans" text="Loans"/>
+        <text name="bank_tab_investments" text="Investments"/>
+        <text name="bank_new_investment" text="New investment"/>
+        <text name="bank_invested_total" text="Total invested"/>
+        <text name="bank_my_investments" text="Active investments"/>
+        <text name="bank_investment_count" text="%d active"/>
+        <text name="bank_investment_estimate" text="At maturity: %s (earns %s · %.1f%% p.a.)"/>
+        <text name="bank_investment_lock" text="Funds locked until maturity; interest compounds monthly."/>
+        <text name="bank_investment_maturity_value" text="Maturity value"/>
+        <text name="bank_investment_term_left" text="%d months left · %.1f%% p.a."/>
+        <text name="bank_investment_limit" text="Investment limit reached"/>
+        <text name="bank_investment_insufficient" text="Not enough funds to invest"/>
+        <text name="bank_no_investments" text="You have no active investments."/>
+        <text name="bank_invest" text="Invest"/>
+        <text name="bank_notice_invested" text="Investment placed. Funds will be released at maturity."/>
+        <text name="bank_notice_investment_matured" text="Investment matured: principal and return credited."/>
+        <text name="bank_notice_err_invest_max" text="Maximum number of active investments reached."/>
         <text name="bank_score_limit" text="Score limit: %s"/>
         <text name="bank_overdue_limit" text="Overdue installment: limit %s"/>
         <text name="bank_row_overdue" text="OVERDUE · installment %s · %d months"/>

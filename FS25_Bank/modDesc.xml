@@ -10,9 +10,9 @@
     </title>
 
     <description>
-        <en><![CDATA[In-game bank with multiple loans, credit score, dynamic credit limit and automatic monthly installments. Press ALT+B on foot to open.]]></en>
-        <pt><![CDATA[Banco dentro do jogo com varios emprestimos, score de credito, limite dinamico e parcelas mensais automaticas. Pressione ALT+B a pe para abrir.]]></pt>
-        <br><![CDATA[Banco dentro do jogo com varios emprestimos, score de credito, limite dinamico e parcelas mensais automaticas. Pressione ALT+B a pe para abrir.]]></br>
+        <en><![CDATA[In-game bank with loans, fixed-term investments, credit score, dynamic credit limit and automatic monthly payments. Press ALT+B on foot to open.]]></en>
+        <pt><![CDATA[Banco dentro do jogo com emprestimos, investimentos a prazo, score de credito, limite dinamico e pagamentos mensais automaticos. Pressione ALT+B a pe para abrir.]]></pt>
+        <br><![CDATA[Banco dentro do jogo com emprestimos, investimentos a prazo, score de credito, limite dinamico e pagamentos mensais automaticos. Pressione ALT+B a pe para abrir.]]></br>
     </description>
 
     <iconFilename>icon_Bank.dds</iconFilename>

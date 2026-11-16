@@ -52,6 +52,23 @@
         <text name="bank_row_detail" text="parcela %s · %d meses · %.1f%% a.a."/>
         <text name="bank_paid" text="%d%% pago"/>
         <text name="bank_notice_err_score" text="Crédito negado: seu score ou parcelas em atraso limitam o valor do empréstimo."/>
+        <text name="bank_tab_loans" text="Empréstimos"/>
+        <text name="bank_tab_investments" text="Investimentos"/>
+        <text name="bank_new_investment" text="Novo investimento"/>
+        <text name="bank_invested_total" text="Total investido"/>
+        <text name="bank_my_investments" text="Investimentos ativos"/>
+        <text name="bank_investment_count" text="%d ativos"/>
+        <text name="bank_investment_estimate" text="No vencimento: %s (rende %s · %.1f%% a.a.)"/>
+        <text name="bank_investment_lock" text="Valor bloqueado até o vencimento; juros compostos mensalmente."/>
+        <text name="bank_investment_maturity_value" text="Valor no vencimento"/>
+        <text name="bank_investment_term_left" text="%d meses restantes · %.1f%% a.a."/>
+        <text name="bank_investment_limit" text="Limite de investimentos atingido"/>
+        <text name="bank_investment_insufficient" text="Saldo insuficiente para investir"/>
+        <text name="bank_no_investments" text="Você ainda não possui investimentos."/>
+        <text name="bank_invest" text="Investir"/>
+        <text name="bank_notice_invested" text="Investimento aplicado. O saldo será liberado no vencimento."/>
+        <text name="bank_notice_investment_matured" text="Investimento vencido: principal e rendimento creditados."/>
+        <text name="bank_notice_err_invest_max" text="Limite de investimentos ativos atingido."/>
         <text name="bank_score_limit" text="Limite pelo score: %s"/>
         <text name="bank_overdue_limit" text="Parcela em atraso: limite de %s"/>
         <text name="bank_row_overdue" text="ATRASADO · parcela %s · %d meses"/>

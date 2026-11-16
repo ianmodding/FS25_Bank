@@ -94,7 +94,8 @@ function BankMain.onSendInitialClientState(_, connection)
             g_bankManager:getFarmLoans(farmId),
             score,
             BankManager.NOTICE.NONE,
-            g_bankManager:getClosedLoans(farmId)
+            g_bankManager:getClosedLoans(farmId),
+            g_bankManager:getInvestments(farmId)
         ))
     end
 end
