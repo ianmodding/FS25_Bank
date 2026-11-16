@@ -37,7 +37,17 @@
         </Profile>
 
         <Profile name="bankScoreFill" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.95 0.72 0.22 1"/>
+            <imageColor value="0.33716 0.55834 0.0003 1"/>
+        </Profile>
+
+        <Profile name="bankScoreTrack" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.055 0.055 0.055 1"/>
+        </Profile>
+
+        <Profile name="bankFormCardBg" extends="bankDashCardBg">
+            <size value="760px 280px"/>
+            <color value="0 0 0 0.88"/>
+            <cornerSize value="0.08"/>
         </Profile>
 
         <Profile name="bankSection" extends="fs25_textDefault" with="anchorBottomLeft">
@@ -183,6 +193,20 @@
             <textSize value="18px"/>
         </Profile>
 
+        <Profile name="bankPayoffActionBar" extends="emptyPanel" with="anchorTopLeft">
+            <size value="1540px 56px"/>
+        </Profile>
+
+        <Profile name="bankPayoffActionBg" extends="bankFormCardBg">
+            <size value="1540px 56px"/>
+            <cornerSize value="0.2"/>
+        </Profile>
+
+        <Profile name="bankPayoffActionText" extends="bankSummaryLabel">
+            <textSize value="18px"/>
+            <textColor value="$preset_colorWhite_50"/>
+        </Profile>
+
         <Profile name="bankLoanRow" extends="bankText">
             <textSize value="14px"/>
         </Profile>
@@ -271,7 +295,7 @@
 
         <Profile name="bankLoansList" extends="emptyPanel" with="pivotTopLeft">
             <position value="0px -190px"/>
-            <size value="1540px 600px"/>
+            <size value="1540px 236px"/>
         </Profile>
 
         <Profile name="bankLoansListItem" extends="fs25_calendarListItem">
