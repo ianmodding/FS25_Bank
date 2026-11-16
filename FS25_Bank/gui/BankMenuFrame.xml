@@ -13,60 +13,100 @@
 
         <GuiElement profile="bankPage">
 
-            <!-- Resumo da conta -->
-            <Bitmap profile="bankCard" position="0px 494px" size="422px 80px"/>
-            <Bitmap profile="bankAccentBar" position="0px 494px" size="5px 80px"/>
-            <Text profile="bankTextBold" id="balanceText" position="22px 536px" size="380px 28px"/>
-            <Text profile="bankText" id="limitText" position="22px 504px" size="380px 28px"/>
+            <Text profile="bankHeaderTitle" id="farmNameText" position="20px 548px" size="620px 28px"/>
+            <Text profile="bankMutedSmall" position="930px 562px" size="350px 18px" text="$l10n_bank_balance_label"/>
+            <Text profile="bankStatusValue" id="balanceText" position="930px 532px" size="350px 30px"/>
 
-            <Bitmap profile="bankCard" position="445px 494px" size="422px 80px"/>
-            <Bitmap profile="bankAccentBar" position="445px 494px" size="5px 80px"/>
-            <Text profile="bankTextBold" id="debtText" position="467px 536px" size="380px 28px"/>
-            <Text profile="bankText" id="scoreText" position="467px 504px" size="380px 28px"/>
+            <!-- Credit, debt, and score cards -->
+            <Bitmap profile="bankCard" position="0px 438px" size="422px 90px"/>
+            <Text profile="bankSummaryLabel" position="22px 500px" size="220px 22px" text="$l10n_bank_available"/>
+            <Text profile="bankMutedSmall" id="availableUsageText" position="260px 500px" size="140px 22px"/>
+            <Text profile="bankStatusValue" id="availableText" position="22px 468px" size="380px 30px"/>
+            <Bitmap profile="bankProgressTrack" id="availableBarTrack" position="22px 448px" size="378px 7px"/>
+            <Bitmap profile="bankProgressFill" id="availableBarFill" position="22px 448px" size="1px 7px"/>
 
-            <Bitmap profile="bankCard" position="890px 494px" size="422px 80px"/>
-            <Bitmap profile="bankAccentBar" position="890px 494px" size="5px 80px"/>
-            <Text profile="bankTextBold" id="rateText" position="912px 520px" size="380px 32px"/>
+            <Bitmap profile="bankCard" position="445px 438px" size="422px 90px"/>
+            <Text profile="bankSummaryLabel" position="467px 504px" size="380px 22px" text="$l10n_bank_debt_title"/>
+            <Text profile="bankStatusValue" id="debtText" position="467px 474px" size="380px 30px"/>
+            <Text profile="bankMutedSmall" id="activeLoansText" position="467px 456px" size="380px 18px"/>
+            <Text profile="bankMutedSmall" id="monthlyLoansText" position="467px 438px" size="380px 18px"/>
 
-            <!-- Novo emprestimo -->
-            <Text profile="bankSection" position="0px 445px" size="600px 34px" text="$l10n_bank_new_loan"/>
-            <Bitmap profile="bankCard" position="0px 250px" size="1312px 185px"/>
-            <Bitmap profile="bankAccentBar" position="0px 250px" size="5px 185px"/>
-            <Bitmap profile="bankCardInset" position="292px 360px" size="248px 48px"/>
-            <Bitmap profile="bankCardInset" position="292px 290px" size="248px 48px"/>
-            <Bitmap profile="bankDivider" position="30px 352px" size="850px 2px"/>
+            <Bitmap profile="bankCard" position="890px 438px" size="422px 90px"/>
+            <Text profile="bankSummaryLabel" position="912px 500px" size="220px 22px" text="$l10n_bank_score_title"/>
+            <Text profile="bankWarningText" id="scoreTierText" position="1144px 500px" size="146px 22px"/>
+            <Text profile="bankStatusValue" id="scoreText" position="912px 468px" size="380px 30px"/>
+            <Bitmap profile="bankProgressTrack" id="scoreBarTrack" position="912px 448px" size="378px 7px"/>
+            <Bitmap profile="bankScoreFill" id="scoreBarFill" position="912px 448px" size="1px 7px"/>
 
-            <Text profile="bankText" position="30px 372px" size="200px 34px" text="$l10n_bank_amount"/>
-            <Button profile="bankButtonGhost" id="amountDownBtn" position="240px 366px" size="48px 46px" text="$l10n_bank_minus" onClick="onClickAmountDown"/>
-            <Text profile="bankValue" id="amountText" position="296px 372px" size="240px 34px"/>
-            <Button profile="bankButtonGhost" id="amountUpBtn" position="544px 366px" size="48px 46px" text="$l10n_bank_plus" onClick="onClickAmountUp"/>
+            <!-- Loan calculator and summary -->
+            <Bitmap profile="bankCard" position="0px 205px" size="760px 220px"/>
+            <Text profile="bankSection" position="24px 392px" size="280px 30px" text="$l10n_bank_new_loan"/>
+            <Text profile="bankWarningText" id="loanLimitText" position="320px 395px" size="416px 22px"/>
+            <Text profile="bankAmount" id="amountText" position="24px 348px" size="500px 48px"/>
+            <Button profile="bankButtonGhost" id="amountDownBtn" position="620px 350px" size="48px 40px" text="$l10n_bank_minus" onClick="onClickAmountDown"/>
+            <Button profile="bankButtonGhost" id="amountUpBtn" position="680px 350px" size="48px 40px" text="$l10n_bank_plus" onClick="onClickAmountUp"/>
+            <Bitmap profile="bankProgressTrack" id="amountSliderTrack" position="24px 330px" size="712px 8px"/>
+            <Bitmap profile="bankProgressFill" id="amountSliderFill" position="24px 330px" size="1px 8px"/>
 
-            <Text profile="bankText" position="30px 302px" size="200px 34px" text="$l10n_bank_term"/>
-            <Button profile="bankButtonGhost" id="termDownBtn" position="240px 296px" size="48px 46px" text="$l10n_bank_minus" onClick="onClickTermDown"/>
-            <Text profile="bankValue" id="termText" position="296px 302px" size="240px 34px"/>
-            <Button profile="bankButtonGhost" id="termUpBtn" position="544px 296px" size="48px 46px" text="$l10n_bank_plus" onClick="onClickTermUp"/>
+            <Button profile="bankChip" id="amountPreset1" position="24px 278px" size="132px 38px" onClick="onClickAmountPreset1"/>
+            <Button profile="bankChipSelected" id="amountPreset1Selected" position="24px 278px" size="132px 38px" visible="false" onClick="onClickAmountPreset1"/>
+            <Button profile="bankChip" id="amountPreset2" position="168px 278px" size="132px 38px" onClick="onClickAmountPreset2"/>
+            <Button profile="bankChipSelected" id="amountPreset2Selected" position="168px 278px" size="132px 38px" visible="false" onClick="onClickAmountPreset2"/>
+            <Button profile="bankChip" id="amountPreset3" position="312px 278px" size="132px 38px" onClick="onClickAmountPreset3"/>
+            <Button profile="bankChipSelected" id="amountPreset3Selected" position="312px 278px" size="132px 38px" visible="false" onClick="onClickAmountPreset3"/>
+            <Button profile="bankChip" id="amountPreset4" position="456px 278px" size="132px 38px" onClick="onClickAmountPreset4"/>
+            <Button profile="bankChipSelected" id="amountPreset4Selected" position="456px 278px" size="132px 38px" visible="false" onClick="onClickAmountPreset4"/>
+            <Button profile="bankChip" id="amountPreset5" position="600px 278px" size="132px 38px" onClick="onClickAmountPreset5"/>
+            <Button profile="bankChipSelected" id="amountPreset5Selected" position="600px 278px" size="132px 38px" visible="false" onClick="onClickAmountPreset5"/>
 
-            <Text profile="bankMuted" id="installmentText" position="30px 262px" size="1000px 28px"/>
-            <Button profile="bankButton" id="borrowButton" position="980px 300px" size="300px 80px" text="$l10n_bank_borrow" onClick="onClickBorrow"/>
+            <Text profile="bankSummaryLabel" position="24px 226px" size="90px 28px" text="$l10n_bank_term"/>
+            <Button profile="bankChip" id="termChoice1" position="120px 216px" size="140px 34px" onClick="onClickTermChoice1"/>
+            <Button profile="bankChipSelected" id="termChoice1Selected" position="120px 216px" size="140px 34px" visible="false" onClick="onClickTermChoice1"/>
+            <Button profile="bankChip" id="termChoice2" position="276px 216px" size="140px 34px" onClick="onClickTermChoice2"/>
+            <Button profile="bankChipSelected" id="termChoice2Selected" position="276px 216px" size="140px 34px" visible="false" onClick="onClickTermChoice2"/>
+            <Button profile="bankChip" id="termChoice3" position="432px 216px" size="140px 34px" onClick="onClickTermChoice3"/>
+            <Button profile="bankChipSelected" id="termChoice3Selected" position="432px 216px" size="140px 34px" visible="false" onClick="onClickTermChoice3"/>
+            <Button profile="bankChip" id="termChoice4" position="588px 216px" size="140px 34px" onClick="onClickTermChoice4"/>
+            <Button profile="bankChipSelected" id="termChoice4Selected" position="588px 216px" size="140px 34px" visible="false" onClick="onClickTermChoice4"/>
 
-            <!-- Meus emprestimos -->
-            <Text profile="bankSection" position="0px 208px" size="600px 34px" text="$l10n_bank_my_loans"/>
-            <Bitmap profile="bankCard" position="0px 0px" size="1312px 200px"/>
-            <Bitmap profile="bankAccentBar" position="0px 0px" size="5px 200px"/>
-            <Bitmap profile="bankDivider" position="30px 157px" size="1250px 1px"/>
-            <Bitmap profile="bankDivider" position="30px 119px" size="1250px 1px"/>
-            <Bitmap profile="bankDivider" position="30px 81px" size="1250px 1px"/>
-            <Bitmap profile="bankDivider" position="30px 43px" size="1250px 1px"/>
-            <Text profile="bankText" id="loanText1" position="30px 160px" size="1080px 34px"/>
-            <Button profile="bankButton" id="payoffBtn1" position="1130px 160px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff1"/>
-            <Text profile="bankText" id="loanText2" position="30px 122px" size="1080px 34px"/>
-            <Button profile="bankButton" id="payoffBtn2" position="1130px 122px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff2"/>
-            <Text profile="bankText" id="loanText3" position="30px 84px" size="1080px 34px"/>
-            <Button profile="bankButton" id="payoffBtn3" position="1130px 84px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff3"/>
-            <Text profile="bankText" id="loanText4" position="30px 46px" size="1080px 34px"/>
-            <Button profile="bankButton" id="payoffBtn4" position="1130px 46px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff4"/>
-            <Text profile="bankText" id="loanText5" position="30px 8px" size="1080px 34px"/>
-            <Button profile="bankButton" id="payoffBtn5" position="1130px 8px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff5"/>
+            <Bitmap profile="bankCard" position="776px 205px" size="536px 220px"/>
+            <Text profile="bankSection" position="800px 392px" size="350px 30px" text="$l10n_bank_summary"/>
+            <Text profile="bankWarningText" id="summaryWarningText" position="1060px 395px" size="228px 22px"/>
+            <Text profile="bankSummaryLabel" position="800px 360px" size="250px 24px" text="$l10n_bank_monthly"/>
+            <Text profile="bankSummaryValue" id="monthlyPaymentText" position="1048px 360px" size="240px 24px"/>
+            <Text profile="bankSummaryLabel" position="800px 332px" size="250px 24px" text="$l10n_bank_total"/>
+            <Text profile="bankSummaryValue" id="totalPayText" position="1048px 332px" size="240px 24px"/>
+            <Text profile="bankSummaryLabel" position="800px 304px" size="250px 24px" text="$l10n_bank_interest"/>
+            <Text profile="bankWarningValue" id="interestText" position="1048px 304px" size="240px 24px"/>
+            <Text profile="bankSummaryLabel" position="800px 276px" size="250px 24px" text="$l10n_bank_rate_label"/>
+            <Text profile="bankSummaryValue" id="rateText" position="1048px 276px" size="240px 24px"/>
+            <Button profile="bankButton" id="borrowButton" position="792px 216px" size="504px 44px" text="$l10n_bank_borrow" onClick="onClickBorrow"/>
+
+            <!-- Loans -->
+            <Bitmap profile="bankCard" position="0px 0px" size="1312px 190px"/>
+            <Text profile="bankSection" position="24px 158px" size="500px 28px" text="$l10n_bank_my_loans"/>
+            <Text profile="bankMutedSmall" id="loanCountText" position="1190px 158px" size="100px 24px"/>
+            <Text profile="bankMuted" id="emptyLoansText" position="400px 78px" size="512px 32px" text="$l10n_bank_no_loans"/>
+
+            <Bitmap profile="bankCardInset" id="loanRowBg1" position="20px 125px" size="1272px 28px" visible="false"/>
+            <Text profile="bankText" id="loanText1" position="36px 126px" size="1060px 26px" visible="false"/>
+            <Button profile="bankButtonDanger" id="payoffBtn1" position="1136px 125px" size="144px 28px" text="$l10n_bank_payoff" visible="false" onClick="onClickPayoff1"/>
+
+            <Bitmap profile="bankCardInset" id="loanRowBg2" position="20px 96px" size="1272px 28px" visible="false"/>
+            <Text profile="bankText" id="loanText2" position="36px 97px" size="1060px 26px" visible="false"/>
+            <Button profile="bankButtonDanger" id="payoffBtn2" position="1136px 96px" size="144px 28px" text="$l10n_bank_payoff" visible="false" onClick="onClickPayoff2"/>
+
+            <Bitmap profile="bankCardInset" id="loanRowBg3" position="20px 67px" size="1272px 28px" visible="false"/>
+            <Text profile="bankText" id="loanText3" position="36px 68px" size="1060px 26px" visible="false"/>
+            <Button profile="bankButtonDanger" id="payoffBtn3" position="1136px 67px" size="144px 28px" text="$l10n_bank_payoff" visible="false" onClick="onClickPayoff3"/>
+
+            <Bitmap profile="bankCardInset" id="loanRowBg4" position="20px 38px" size="1272px 28px" visible="false"/>
+            <Text profile="bankText" id="loanText4" position="36px 39px" size="1060px 26px" visible="false"/>
+            <Button profile="bankButtonDanger" id="payoffBtn4" position="1136px 38px" size="144px 28px" text="$l10n_bank_payoff" visible="false" onClick="onClickPayoff4"/>
+
+            <Bitmap profile="bankCardInset" id="loanRowBg5" position="20px 9px" size="1272px 28px" visible="false"/>
+            <Text profile="bankText" id="loanText5" position="36px 10px" size="1060px 26px" visible="false"/>
+            <Button profile="bankButtonDanger" id="payoffBtn5" position="1136px 9px" size="144px 28px" text="$l10n_bank_payoff" visible="false" onClick="onClickPayoff5"/>
         </GuiElement>
         </GuiElement>
     </GuiElement>

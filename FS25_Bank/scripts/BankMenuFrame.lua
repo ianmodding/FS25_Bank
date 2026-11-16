@@ -16,10 +16,11 @@ BankMenuFrame.PAGE_NAME = "pageBank"
 function BankMenuFrame.new()
     local self = TabbedMenuFrameElement.new(nil, BankMenuFrame_mt)
     self.name = "BankMenuFrame"
-    self.amount = BankManager.MIN_AMOUNT
-    self.termIndex = 2 -- 12 meses
+    self.amount = BankUI.amount
+    self.termIndex = BankUI.termIndex
     self.isShown = false
     self.menuButtonInfo = {}
+    self.maxAllowed = BankManager.MAX_AMOUNT
     return self
 end
 
@@ -194,6 +195,18 @@ function BankMenuFrame:setVisibleOf(id, visible)
     end
 end
 
+function BankMenuFrame:updateProgressBar(fillId, trackId, ratio)
+    local fill = self[fillId]
+    local track = self[trackId]
+    if fill == nil or track == nil or fill.absSize == nil or track.absSize == nil then
+        return
+    end
+    if fill._baseHeight == nil then
+        fill._baseHeight = fill.absSize[2]
+    end
+    fill:setSize(track.absSize[1] * math.max(0, math.min(1, ratio)), fill._baseHeight)
+end
+
 ---------------------------------------------------------------------
 -- Atualiza textos e botoes
 ---------------------------------------------------------------------
@@ -206,45 +219,122 @@ function BankMenuFrame:refresh()
     end
 
     local fmt = BankManager.formatMoney
+    local score = bm:getScore(farmId)
+    local debt = bm:getTotalDebt(farmId)
+    local maxAllowed = bm:getMaxLoanAmount(farmId)
+    self.maxAllowed = maxAllowed
+    self.amount = math.max(BankManager.MIN_AMOUNT, math.min(self.amount, maxAllowed))
+    BankUI.amount = self.amount
+    BankUI.termIndex = self.termIndex
+
     local months = BankManager.TERMS[self.termIndex]
     local rate = bm:getAnnualRate(farmId, months)
     local installment = BankManager.calcInstallment(self.amount, rate, months)
+    local totalPay = installment * months
     local available = bm:getAvailableCredit(farmId)
     local loans = bm:getFarmLoans(farmId)
+    local monthlyPayments = 0
+    for _, loan in ipairs(loans) do
+        monthlyPayments = monthlyPayments + loan.installment
+    end
+    local usedRatio = debt + available > 0 and debt / (debt + available) or 0
+    local scoreRatio = score / BankManager.SCORE_MAX
+    local tierKey
+    if scoreRatio >= 0.8 then
+        tierKey = "bank_tier_excellent"
+    elseif scoreRatio >= 0.6 then
+        tierKey = "bank_tier_good"
+    elseif scoreRatio >= 0.4 then
+        tierKey = "bank_tier_fair"
+    else
+        tierKey = "bank_tier_low"
+    end
 
-    self:setTextOf("balanceText", string.format(g_i18n:getText("bank_balance"), fmt(farm:getBalance())))
-    self:setTextOf("limitText", string.format(g_i18n:getText("bank_limit"), fmt(available)))
-    self:setTextOf("debtText", string.format(g_i18n:getText("bank_debt"), fmt(bm:getTotalDebt(farmId))))
-    self:setTextOf("scoreText", string.format(g_i18n:getText("bank_score"), bm:getScore(farmId)))
-    self:setTextOf("rateText", string.format(g_i18n:getText("bank_rate"), rate * 100))
+    self:setTextOf("farmNameText", tostring(farm.name or ""))
+    self:setTextOf("balanceText", fmt(farm:getBalance()))
+    self:setTextOf("availableText", fmt(available))
+    self:setTextOf("availableUsageText", string.format(g_i18n:getText("bank_in_use"), math.floor(usedRatio * 100 + 0.5)))
+    self:setTextOf("debtText", fmt(debt))
+    self:setTextOf("activeLoansText", string.format(g_i18n:getText("bank_active_loans"), #loans, BankManager.MAX_LOANS_PER_FARM))
+    self:setTextOf("monthlyLoansText", string.format(g_i18n:getText("bank_monthly_total"), fmt(monthlyPayments)))
+    self:setTextOf("scoreText", string.format("%d/%d", score, BankManager.SCORE_MAX))
+    self:setTextOf("scoreTierText", g_i18n:getText(tierKey))
 
     self:setTextOf("amountText", fmt(self.amount))
-    self:setTextOf("termText", string.format(g_i18n:getText("bank_term_value"), months))
-    self:setTextOf("installmentText", string.format(g_i18n:getText("bank_installment"), fmt(installment), fmt(installment * months)))
+    if bm:hasOverdue(farmId) then
+        self:setTextOf("loanLimitText", string.format(g_i18n:getText("bank_overdue_limit"), fmt(maxAllowed)))
+    elseif maxAllowed < BankManager.MAX_AMOUNT then
+        self:setTextOf("loanLimitText", string.format(g_i18n:getText("bank_score_limit"), fmt(maxAllowed)))
+    else
+        self:setTextOf("loanLimitText", "")
+    end
 
-    local canBorrow = self.amount <= available and #loans < BankManager.MAX_LOANS_PER_FARM
+    self:setTextOf("monthlyPaymentText", fmt(installment))
+    self:setTextOf("totalPayText", fmt(totalPay))
+    self:setTextOf("interestText", fmt(totalPay - self.amount))
+    self:setTextOf("rateText", string.format("%.1f%%", rate * 100))
+    self:setTextOf("loanCountText", string.format("%d/%d", #loans, BankManager.MAX_LOANS_PER_FARM))
+    self:setVisibleOf("emptyLoansText", #loans == 0)
+
+    local canBorrow = self.amount <= available and self.amount <= maxAllowed and #loans < BankManager.MAX_LOANS_PER_FARM
+    if self.amount > available then
+        self:setTextOf("summaryWarningText", g_i18n:getText("bank_over_limit"))
+    elseif #loans >= BankManager.MAX_LOANS_PER_FARM then
+        self:setTextOf("summaryWarningText", g_i18n:getText("bank_max_loans"))
+    else
+        self:setTextOf("summaryWarningText", "")
+    end
+
     self:setDisabledOf("borrowButton", not canBorrow)
     self:setDisabledOf("amountDownBtn", self.amount <= BankManager.MIN_AMOUNT)
-    self:setDisabledOf("amountUpBtn", self.amount >= BankManager.MAX_AMOUNT)
-    self:setDisabledOf("termDownBtn", self.termIndex <= 1)
-    self:setDisabledOf("termUpBtn", self.termIndex >= #BankManager.TERMS)
+    self:setDisabledOf("amountUpBtn", self.amount >= math.min(BankManager.MAX_AMOUNT, maxAllowed))
+
+    for i, amount in ipairs(BankUI.QUICK_AMOUNTS) do
+        local selected = self.amount == amount
+        local normalId = "amountPreset" .. i
+        local selectedId = normalId .. "Selected"
+        local text = fmt(amount)
+        self:setTextOf(normalId, text)
+        self:setTextOf(selectedId, text)
+        self:setVisibleOf(normalId, not selected)
+        self:setVisibleOf(selectedId, selected)
+        self:setDisabledOf(normalId, amount > maxAllowed)
+    end
+
+    for i, term in ipairs(BankManager.TERMS) do
+        local selected = self.termIndex == i
+        local normalId = "termChoice" .. i
+        local selectedId = normalId .. "Selected"
+        local text = string.format(g_i18n:getText("bank_term_value"), term)
+        self:setTextOf(normalId, text)
+        self:setTextOf(selectedId, text)
+        self:setVisibleOf(normalId, not selected)
+        self:setVisibleOf(selectedId, selected)
+    end
+
+    self:updateProgressBar("availableBarFill", "availableBarTrack", usedRatio)
+    self:updateProgressBar("scoreBarFill", "scoreBarTrack", scoreRatio)
+    self:updateProgressBar(
+        "amountSliderFill",
+        "amountSliderTrack",
+        (self.amount - BankManager.MIN_AMOUNT) / (BankManager.MAX_AMOUNT - BankManager.MIN_AMOUNT)
+    )
 
     for i = 1, BankMenuFrame.MAX_ROWS do
         local loan = loans[i]
         local textId = "loanText" .. i
         local buttonId = "payoffBtn" .. i
+        local backgroundId = "loanRowBg" .. i
 
         if loan ~= nil then
             self:setTextOf(textId, string.format(g_i18n:getText("bank_row"), fmt(loan.remaining), fmt(loan.installment), loan.monthsLeft, loan.annualRate * 100))
             self:setVisibleOf(textId, true)
             self:setVisibleOf(buttonId, true)
-        elseif i == 1 then
-            self:setTextOf(textId, g_i18n:getText("bank_no_loans"))
-            self:setVisibleOf(textId, true)
-            self:setVisibleOf(buttonId, false)
+            self:setVisibleOf(backgroundId, true)
         else
             self:setVisibleOf(textId, false)
             self:setVisibleOf(buttonId, false)
+            self:setVisibleOf(backgroundId, false)
         end
     end
 end
@@ -258,19 +348,35 @@ function BankMenuFrame:onClickAmountDown()
 end
 
 function BankMenuFrame:onClickAmountUp()
-    self.amount = math.min(BankManager.MAX_AMOUNT, self.amount + BankManager.AMOUNT_STEP)
+    self.amount = math.min(math.min(BankManager.MAX_AMOUNT, self.maxAllowed), self.amount + BankManager.AMOUNT_STEP)
     self:safeRefresh()
 end
 
-function BankMenuFrame:onClickTermDown()
-    self.termIndex = math.max(1, self.termIndex - 1)
-    self:safeRefresh()
+function BankMenuFrame:setAmountPreset(index)
+    local amount = BankUI.QUICK_AMOUNTS[index]
+    if amount ~= nil and amount <= self.maxAllowed then
+        self.amount = amount
+        self:safeRefresh()
+    end
 end
 
-function BankMenuFrame:onClickTermUp()
-    self.termIndex = math.min(#BankManager.TERMS, self.termIndex + 1)
-    self:safeRefresh()
+function BankMenuFrame:setTermChoice(index)
+    if index >= 1 and index <= #BankManager.TERMS then
+        self.termIndex = index
+        self:safeRefresh()
+    end
 end
+
+function BankMenuFrame:onClickAmountPreset1() self:setAmountPreset(1) end
+function BankMenuFrame:onClickAmountPreset2() self:setAmountPreset(2) end
+function BankMenuFrame:onClickAmountPreset3() self:setAmountPreset(3) end
+function BankMenuFrame:onClickAmountPreset4() self:setAmountPreset(4) end
+function BankMenuFrame:onClickAmountPreset5() self:setAmountPreset(5) end
+
+function BankMenuFrame:onClickTermChoice1() self:setTermChoice(1) end
+function BankMenuFrame:onClickTermChoice2() self:setTermChoice(2) end
+function BankMenuFrame:onClickTermChoice3() self:setTermChoice(3) end
+function BankMenuFrame:onClickTermChoice4() self:setTermChoice(4) end
 
 function BankMenuFrame:onClickBorrow()
     g_bankManager:request(BankManager.ACTION_BORROW, self.amount, BankManager.TERMS[self.termIndex])

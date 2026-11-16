@@ -8,11 +8,11 @@
         </Profile>
 
         <Profile name="bankCard" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.055 0.063 0.074 0.98"/>
+            <imageColor value="0.150 0.172 0.195 1"/>
         </Profile>
 
         <Profile name="bankCardInset" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.085 0.098 0.112 1"/>
+            <imageColor value="0.195 0.220 0.248 1"/>
         </Profile>
 
         <Profile name="bankAccentBar" extends="baseReference" with="anchorBottomLeft">
@@ -20,18 +20,68 @@
         </Profile>
 
         <Profile name="bankDivider" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.24 0.28 0.31 0.85"/>
+            <imageColor value="1 1 1 0.08"/>
+        </Profile>
+
+        <Profile name="bankProgressTrack" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.24 0.27 0.30 1"/>
+        </Profile>
+
+        <Profile name="bankProgressFill" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.33716 0.55834 0.0003 1"/>
+        </Profile>
+
+        <Profile name="bankScoreFill" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.95 0.72 0.22 1"/>
         </Profile>
 
         <Profile name="bankSection" extends="fs25_textDefault" with="anchorBottomLeft">
-            <textSize value="26px"/>
+            <textSize value="24px"/>
             <textBold value="true"/>
-            <textUpperCase value="true"/>
             <textColor value="0.33716 0.55834 0.0003 1"/>
         </Profile>
 
         <Profile name="bankText" extends="fs25_textDefault" with="anchorBottomLeft">
             <textSize value="20px"/>
+        </Profile>
+
+        <Profile name="bankHeaderTitle" extends="bankText">
+            <textSize value="22px"/>
+            <textBold value="true"/>
+        </Profile>
+
+        <Profile name="bankAmount" extends="bankText">
+            <textSize value="40px"/>
+            <textBold value="true"/>
+        </Profile>
+
+        <Profile name="bankStatusValue" extends="bankText">
+            <textSize value="27px"/>
+            <textBold value="true"/>
+        </Profile>
+
+        <Profile name="bankSummaryLabel" extends="bankText">
+            <textSize value="16px"/>
+            <textColor value="0.66 0.72 0.78 1"/>
+        </Profile>
+
+        <Profile name="bankSummaryValue" extends="bankText">
+            <textSize value="19px"/>
+            <textBold value="true"/>
+            <textAlignment value="right"/>
+        </Profile>
+
+        <Profile name="bankMutedSmall" extends="bankText">
+            <textSize value="15px"/>
+            <textColor value="0.66 0.72 0.78 1"/>
+        </Profile>
+
+        <Profile name="bankWarningText" extends="bankMutedSmall">
+            <textColor value="0.95 0.72 0.22 1"/>
+        </Profile>
+
+        <Profile name="bankWarningValue" extends="bankSummaryValue">
+            <textColor value="0.95 0.72 0.22 1"/>
         </Profile>
 
         <Profile name="bankTextBold" extends="bankText">
@@ -50,28 +100,54 @@
         </Profile>
 
         <Profile name="bankButton" extends="baseReference" with="anchorBottomLeft">
-            <imageColor value="0.22323 0.40724 0.00368 1"/>
-            <imageFocusedColor value="0.33716 0.55834 0.0003 1"/>
-            <imageHighlightedColor value="0.33716 0.55834 0.0003 1"/>
-            <imageSelectedColor value="0.33716 0.55834 0.0003 1"/>
+            <imageColor value="0.722 0.976 0 1"/>
+            <imageFocusedColor value="0.82 1 0.25 1"/>
+            <imageHighlightedColor value="0.82 1 0.25 1"/>
+            <imageSelectedColor value="0.82 1 0.25 1"/>
             <imageDisabledColor value="0.04231 0.04231 0.04231 1"/>
             <textSize value="19px"/>
             <textBold value="true"/>
             <textUpperCase value="true"/>
             <textAlignment value="center"/>
-            <textColor value="0.89627 0.92158 0.81485 1"/>
-            <textFocusedColor value="1 1 1 1"/>
-            <textHighlightedColor value="1 1 1 1"/>
-            <textSelectedColor value="1 1 1 1"/>
+            <textColor value="0.04 0.06 0.02 1"/>
+            <textFocusedColor value="0.04 0.06 0.02 1"/>
+            <textHighlightedColor value="0.04 0.06 0.02 1"/>
+            <textSelectedColor value="0.04 0.06 0.02 1"/>
             <textDisabledColor value="0.3 0.3 0.3 1"/>
         </Profile>
 
         <Profile name="bankButtonGhost" extends="bankButton">
-            <imageColor value="0.13 0.15 0.17 1"/>
-            <imageFocusedColor value="0.22 0.26 0.29 1"/>
-            <imageHighlightedColor value="0.22 0.26 0.29 1"/>
-            <imageSelectedColor value="0.22 0.26 0.29 1"/>
+            <imageColor value="0.215 0.245 0.275 1"/>
+            <imageFocusedColor value="0.30 0.34 0.38 1"/>
+            <imageHighlightedColor value="0.30 0.34 0.38 1"/>
+            <imageSelectedColor value="0.30 0.34 0.38 1"/>
+            <textColor value="0.92 0.94 0.96 1"/>
+            <textFocusedColor value="1 1 1 1"/>
+            <textHighlightedColor value="1 1 1 1"/>
+            <textSelectedColor value="1 1 1 1"/>
             <textSize value="28px"/>
+        </Profile>
+
+        <Profile name="bankButtonDanger" extends="bankButton">
+            <imageColor value="0.76 0.29 0.27 1"/>
+            <imageFocusedColor value="0.90 0.39 0.35 1"/>
+            <imageHighlightedColor value="0.90 0.39 0.35 1"/>
+            <imageSelectedColor value="0.90 0.39 0.35 1"/>
+            <textColor value="1 1 1 1"/>
+            <textFocusedColor value="1 1 1 1"/>
+            <textHighlightedColor value="1 1 1 1"/>
+            <textSelectedColor value="1 1 1 1"/>
+            <textSize value="16px"/>
+        </Profile>
+
+        <Profile name="bankChip" extends="bankButtonGhost">
+            <textUpperCase value="false"/>
+            <textSize value="17px"/>
+        </Profile>
+
+        <Profile name="bankChipSelected" extends="bankButton">
+            <textUpperCase value="false"/>
+            <textSize value="17px"/>
         </Profile>
     </Profiles>
 </GUIProfiles>
