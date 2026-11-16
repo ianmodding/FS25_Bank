@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <!-- Aba "Banco" do menu ESC. Perfis fs25_menu* sao do jogo; bank* sao do mod (gui/guiProfiles.xml). -->
-<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+<GUI>
     <GuiElement profile="fs25_menuContainer">
 
         <GuiElement profile="fs25_menuHeaderPanel">

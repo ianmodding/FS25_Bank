@@ -40,6 +40,8 @@ Para abrir o banco dentro do jogo:
 3. Pressione **ALT + B**.
 4. A interface do banco será aberta.
 
+Também é possível acessar a aba **Banco** pelo menu **ESC**.
+
 ## 🖥️ Compatibilidade
 
 - Farming Simulator 25

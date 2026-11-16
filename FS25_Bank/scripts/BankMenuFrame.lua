@@ -108,15 +108,8 @@ function BankMenuFrame.register()
     end
 
     local pageName = BankMenuFrame.PAGE_NAME
-    if inGameMenu.controlIDs ~= nil then
-        inGameMenu.controlIDs[pageName] = nil
-    end
     inGameMenu[pageName] = frame
-    inGameMenu.pagingElement:addElement(frame)
-    inGameMenu.pagingElement:updateAbsolutePosition()
-    inGameMenu.pagingElement:updatePageMapping()
-
-    inGameMenu:registerPage(frame, nil, function() return true end)
+    inGameMenu:registerPage(frame, pageName, function() return true end)
 
     local iconFile = Utils.getFilename("images/menuIcon.png", BankMain.dir)
     inGameMenu:addPageTab(frame, iconFile, GuiUtils.getUVs({0, 0, 1024, 1024}))

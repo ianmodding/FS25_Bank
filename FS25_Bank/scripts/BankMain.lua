@@ -9,9 +9,7 @@ BankMain = {}
 BankMain.dir = modDirectory
 BankMain.modName = modName
 
--- Aba "Banco" no menu ESC: DESLIGADA. Ela registra, mas causa "stack overflow" no GuiElement do jogo.
--- Mude para true apenas para testar de novo.
-BankMain.ENABLE_MENU_TAB = false
+BankMain.ENABLE_MENU_TAB = true
 
 source(modDirectory .. "scripts/BankManager.lua")
 source(modDirectory .. "scripts/BankEvents.lua")
