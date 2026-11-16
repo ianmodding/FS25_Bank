@@ -60,6 +60,16 @@
             <textBold value="true"/>
         </Profile>
 
+        <Profile name="bankBalanceValue" extends="bankStatusValue">
+            <textSize value="21px"/>
+            <textColor value="0.722 0.976 0 1"/>
+            <textAlignment value="right"/>
+        </Profile>
+
+        <Profile name="bankAccentValue" extends="bankStatusValue">
+            <textColor value="0.722 0.976 0 1"/>
+        </Profile>
+
         <Profile name="bankSummaryLabel" extends="bankText">
             <textSize value="16px"/>
             <textColor value="0.66 0.72 0.78 1"/>
@@ -151,6 +161,10 @@
         </Profile>
 
         <Profile name="bankTab" extends="bankButtonGhost">
+            <imageColor value="0.004 0.004 0.004 1"/>
+            <imageFocusedColor value="0.035 0.035 0.035 1"/>
+            <imageHighlightedColor value="0.035 0.035 0.035 1"/>
+            <imageSelectedColor value="0.035 0.035 0.035 1"/>
             <textUpperCase value="true"/>
             <textSize value="15px"/>
         </Profile>
@@ -165,7 +179,7 @@
         </Profile>
 
         <Profile name="bankLoanRow" extends="bankText">
-            <textSize value="16px"/>
+            <textSize value="14px"/>
         </Profile>
     </Profiles>
 </GUIProfiles>

@@ -258,10 +258,10 @@ function BankMenuFrame:refresh()
     self:setTextOf("availableText", fmt(available))
     self:setTextOf("availableUsageText", string.format(g_i18n:getText("bank_in_use"), math.floor(usedRatio * 100 + 0.5)))
     self:setTextOf("debtText", fmt(debt))
-    self:setTextOf("activeLoansText", string.format(g_i18n:getText("bank_active_loans"), #loans, BankManager.MAX_LOANS_PER_FARM))
     self:setTextOf("monthlyLoansText", string.format(g_i18n:getText("bank_monthly_total"), fmt(monthlyPayments)))
     self:setTextOf("scoreText", string.format("%d/%d", score, BankManager.SCORE_MAX))
     self:setTextOf("scoreTierText", g_i18n:getText(tierKey))
+    self:setTextOf("currentRateText", string.format("%.2f%%", rate * 100))
 
     self:setTextOf("amountText", fmt(self.amount))
     if bm:hasOverdue(farmId) then
@@ -418,6 +418,14 @@ end
 
 function BankMenuFrame:onClickNextLoansPage()
     self:changeLoansPage(1)
+end
+
+function BankMenuFrame:onClickPreviousLoansTab()
+    self:setLoanView(self.loanView == "active" and "closed" or "active")
+end
+
+function BankMenuFrame:onClickNextLoansTab()
+    self:setLoanView(self.loanView == "active" and "closed" or "active")
 end
 
 function BankMenuFrame:setAmountPreset(index)

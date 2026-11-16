@@ -62,5 +62,6 @@
         <text name="bank_closed_row" text="Original %s · closing payment %s · %s · %.1f%% p.a."/>
         <text name="bank_closed_early" text="Paid off early"/>
         <text name="bank_closed_complete" text="Completed"/>
+        <text name="bank_rate_current_subtitle" text="Selected term"/>
     </texts>
 </l10n>
