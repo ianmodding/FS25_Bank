@@ -7,6 +7,11 @@
             <position value="226px 50px"/>
         </Profile>
 
+        <Profile name="bankContent" extends="emptyPanel" with="anchorBottomLeft">
+            <size value="1312px 580px"/>
+            <position value="0px 0px"/>
+        </Profile>
+
         <Profile name="bankCard" extends="baseReference" with="anchorBottomLeft">
             <imageColor value="0.004 0.004 0.004 1"/>
         </Profile>
@@ -180,6 +185,31 @@
 
         <Profile name="bankLoanRow" extends="bankText">
             <textSize value="14px"/>
+        </Profile>
+
+        <Profile name="bankMetricLabel" extends="bankSummaryLabel">
+            <textSize value="15px"/>
+        </Profile>
+
+        <Profile name="bankMetricValue" extends="bankStatusValue">
+            <textSize value="25px"/>
+        </Profile>
+
+        <Profile name="bankTableHeader" extends="bankCardInset">
+            <imageColor value="0.035 0.035 0.035 1"/>
+        </Profile>
+
+        <Profile name="bankTableHeaderText" extends="bankMutedSmall">
+            <textSize value="13px"/>
+            <textBold value="true"/>
+        </Profile>
+
+        <Profile name="bankTableCell" extends="bankText">
+            <textSize value="14px"/>
+        </Profile>
+
+        <Profile name="bankTableStatus" extends="bankTableCell">
+            <textColor value="0.722 0.976 0 1"/>
         </Profile>
     </Profiles>
 </GUIProfiles>

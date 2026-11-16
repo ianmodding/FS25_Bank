@@ -63,5 +63,22 @@
         <text name="bank_closed_early" text="Paid off early"/>
         <text name="bank_closed_complete" text="Completed"/>
         <text name="bank_rate_current_subtitle" text="Selected term"/>
+        <text name="bank_available_subtitle" text="Available for new loans"/>
+        <text name="bank_debt_usage" text="%d%% of credit limit used"/>
+        <text name="bank_monthly_total_label" text="Monthly installments"/>
+        <text name="bank_monthly_subtitle" text="Combined monthly total"/>
+        <text name="bank_col_type" text="Type"/>
+        <text name="bank_col_amount" text="Original amount"/>
+        <text name="bank_col_monthly" text="Monthly payment"/>
+        <text name="bank_col_rate" text="Rate"/>
+        <text name="bank_col_duration" text="Term"/>
+        <text name="bank_col_remaining" text="Balance remaining"/>
+        <text name="bank_col_closing_payment" text="Closing payment"/>
+        <text name="bank_col_status" text="Status"/>
+        <text name="bank_col_action" text="Action"/>
+        <text name="bank_loan_type" text="Loan"/>
+        <text name="bank_status_active" text="Active"/>
+        <text name="bank_status_overdue" text="Overdue"/>
+        <text name="bank_back" text="Back"/>
     </texts>
 </l10n>
