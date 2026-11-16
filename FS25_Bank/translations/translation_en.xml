@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <texts>
+        <text name="input_OPEN_BANK" text="Open Bank"/>
+        <text name="bank_title" text="Bank"/>
+        <text name="bank_close" text="X"/>
+        <text name="bank_balance" text="Balance: %s"/>
+        <text name="bank_limit" text="Available credit: %s"/>
+        <text name="bank_debt" text="Total debt: %s"/>
+        <text name="bank_score" text="Credit score: %d/750"/>
+        <text name="bank_rate" text="Rate: %.1f%% p.a."/>
+        <text name="bank_new_loan" text="New loan"/>
+        <text name="bank_amount" text="Amount"/>
+        <text name="bank_term" text="Term"/>
+        <text name="bank_term_value" text="%d months"/>
+        <text name="bank_installment" text="Monthly installment: %s   |   Total to repay: %s"/>
+        <text name="bank_borrow" text="Take loan"/>
+        <text name="bank_my_loans" text="My loans"/>
+        <text name="bank_no_loans" text="No active loans."/>
+        <text name="bank_row" text="%s left  ·  installment %s  ·  %d months  ·  %.1f%% p.a."/>
+        <text name="bank_payoff" text="Pay off"/>
+        <text name="bank_minus" text="-"/>
+        <text name="bank_plus" text="+"/>
+        <text name="bank_notice_taken" text="Loan approved and deposited."/>
+        <text name="bank_notice_paid" text="Loan installment paid."/>
+        <text name="bank_notice_missed" text="Insufficient funds! Late installment: fee applied, score reduced and credit limited."/>
+        <text name="bank_notice_paid_off" text="Loan paid off!"/>
+        <text name="bank_notice_err_limit" text="Credit denied: above available limit."/>
+        <text name="bank_notice_err_funds" text="Not enough money to pay off."/>
+        <text name="bank_notice_err_max" text="Maximum number of active loans reached."/>
+        <text name="bank_notice_err_invalid" text="Invalid request."/>
+        <text name="bank_balance_label" text="Balance"/>
+        <text name="bank_available" text="Available credit"/>
+        <text name="bank_in_use" text="%d%% in use"/>
+        <text name="bank_debt_title" text="Total debt"/>
+        <text name="bank_active_loans" text="%d of %d active loans"/>
+        <text name="bank_monthly_total" text="Monthly installments: %s"/>
+        <text name="bank_score_title" text="Credit score"/>
+        <text name="bank_tier_excellent" text="Excellent"/>
+        <text name="bank_tier_good" text="Good"/>
+        <text name="bank_tier_fair" text="Fair"/>
+        <text name="bank_tier_low" text="Low"/>
+        <text name="bank_summary" text="Summary"/>
+        <text name="bank_monthly" text="Monthly installment"/>
+        <text name="bank_total" text="Total to repay"/>
+        <text name="bank_interest" text="Total interest"/>
+        <text name="bank_rate_label" text="Annual rate"/>
+        <text name="bank_over_limit" text="Above limit"/>
+        <text name="bank_max_loans" text="Max loans reached"/>
+        <text name="bank_remaining" text="%s left"/>
+        <text name="bank_row_detail" text="installment %s · %d months · %.1f%% p.a."/>
+        <text name="bank_paid" text="%d%% paid"/>
+        <text name="bank_notice_err_score" text="Credit denied: your score or overdue installments limit the loan amount."/>
+        <text name="bank_score_limit" text="Score limit: %s"/>
+        <text name="bank_overdue_limit" text="Overdue installment: limit %s"/>
+        <text name="bank_row_overdue" text="OVERDUE · installment %s · %d months"/>
+    </texts>
+</l10n>

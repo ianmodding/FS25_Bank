@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="116">
+    <author>Ian Modding</author>
+    <version>1.0.0.0</version>
+
+    <title>
+        <en>Bank</en>
+        <pt>Banco</pt>
+        <br>Banco</br>
+    </title>
+
+    <description>
+        <en><![CDATA[In-game bank with multiple loans, credit score, dynamic credit limit and automatic monthly installments. Press ALT+B on foot to open.]]></en>
+        <pt><![CDATA[Banco dentro do jogo com varios emprestimos, score de credito, limite dinamico e parcelas mensais automaticas. Pressione ALT+B a pe para abrir.]]></pt>
+        <br><![CDATA[Banco dentro do jogo com varios emprestimos, score de credito, limite dinamico e parcelas mensais automaticas. Pressione ALT+B a pe para abrir.]]></br>
+    </description>
+
+    <iconFilename>icon_Bank.dds</iconFilename>
+    <multiplayer supported="true"/>
+
+    <extraSourceFiles>
+        <sourceFile filename="scripts/BankMain.lua"/>
+    </extraSourceFiles>
+
+    <actions>
+        <action name="OPEN_BANK" category="ONFOOT"/>
+    </actions>
+
+    <inputBinding>
+        <actionBinding action="OPEN_BANK">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_b"/>
+        </actionBinding>
+    </inputBinding>
+
+    <l10n filenamePrefix="translations/translation"/>
+</modDesc>

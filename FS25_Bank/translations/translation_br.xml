@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <texts>
+        <text name="input_OPEN_BANK" text="Abrir Banco"/>
+        <text name="bank_title" text="Banco"/>
+        <text name="bank_close" text="X"/>
+        <text name="bank_balance" text="Saldo: %s"/>
+        <text name="bank_limit" text="Crédito disponível: %s"/>
+        <text name="bank_debt" text="Dívida total: %s"/>
+        <text name="bank_score" text="Score de crédito: %d/750"/>
+        <text name="bank_rate" text="Taxa: %.1f%% a.a."/>
+        <text name="bank_new_loan" text="Novo empréstimo"/>
+        <text name="bank_amount" text="Valor"/>
+        <text name="bank_term" text="Prazo"/>
+        <text name="bank_term_value" text="%d meses"/>
+        <text name="bank_installment" text="Parcela mensal: %s   |   Total a pagar: %s"/>
+        <text name="bank_borrow" text="Contratar"/>
+        <text name="bank_my_loans" text="Meus empréstimos"/>
+        <text name="bank_no_loans" text="Nenhum empréstimo ativo."/>
+        <text name="bank_row" text="%s restante  ·  parcela %s  ·  %d meses  ·  %.1f%% a.a."/>
+        <text name="bank_payoff" text="Quitar"/>
+        <text name="bank_minus" text="-"/>
+        <text name="bank_plus" text="+"/>
+        <text name="bank_notice_taken" text="Empréstimo aprovado e depositado na conta."/>
+        <text name="bank_notice_paid" text="Parcela do empréstimo debitada."/>
+        <text name="bank_notice_missed" text="Saldo insuficiente! Parcela atrasada: multa aplicada, score reduzido e crédito limitado."/>
+        <text name="bank_notice_paid_off" text="Empréstimo quitado!"/>
+        <text name="bank_notice_err_limit" text="Crédito negado: acima do limite disponível."/>
+        <text name="bank_notice_err_funds" text="Saldo insuficiente para quitar."/>
+        <text name="bank_notice_err_max" text="Limite de empréstimos ativos atingido."/>
+        <text name="bank_notice_err_invalid" text="Pedido inválido."/>
+        <text name="bank_balance_label" text="Saldo"/>
+        <text name="bank_available" text="Crédito disponível"/>
+        <text name="bank_in_use" text="%d%% em uso"/>
+        <text name="bank_debt_title" text="Dívida total"/>
+        <text name="bank_active_loans" text="%d de %d empréstimos ativos"/>
+        <text name="bank_monthly_total" text="Parcelas por mês: %s"/>
+        <text name="bank_score_title" text="Score de crédito"/>
+        <text name="bank_tier_excellent" text="Excelente"/>
+        <text name="bank_tier_good" text="Bom"/>
+        <text name="bank_tier_fair" text="Regular"/>
+        <text name="bank_tier_low" text="Baixo"/>
+        <text name="bank_summary" text="Resumo"/>
+        <text name="bank_monthly" text="Parcela mensal"/>
+        <text name="bank_total" text="Total a pagar"/>
+        <text name="bank_interest" text="Juros totais"/>
+        <text name="bank_rate_label" text="Taxa anual"/>
+        <text name="bank_over_limit" text="Acima do limite"/>
+        <text name="bank_max_loans" text="Máximo de empréstimos"/>
+        <text name="bank_remaining" text="%s restante"/>
+        <text name="bank_row_detail" text="parcela %s · %d meses · %.1f%% a.a."/>
+        <text name="bank_paid" text="%d%% pago"/>
+        <text name="bank_notice_err_score" text="Crédito negado: seu score ou parcelas em atraso limitam o valor do empréstimo."/>
+        <text name="bank_score_limit" text="Limite pelo score: %s"/>
+        <text name="bank_overdue_limit" text="Parcela em atraso: limite de %s"/>
+        <text name="bank_row_overdue" text="ATRASADO · parcela %s · %d meses"/>
+    </texts>
+</l10n>

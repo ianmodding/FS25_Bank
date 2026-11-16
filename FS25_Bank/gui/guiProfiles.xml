@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!-- Perfis da aba do banco. Fundos solidos = baseReference (g_baseUIFilename + gui.colorPreset) + imageColor. -->
+<GUIProfiles>
+    <Profiles>
+        <Profile name="bankPage" extends="emptyPanel" with="anchorBottomLeft">
+            <size value="1312px 580px"/>
+            <position value="226px 50px"/>
+        </Profile>
+
+        <Profile name="bankCard" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.00439 0.00478 0.00368 0.78"/>
+        </Profile>
+
+        <Profile name="bankAccentBar" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.33716 0.55834 0.0003 1"/>
+        </Profile>
+
+        <Profile name="bankSection" extends="fs25_textDefault" with="anchorBottomLeft">
+            <textSize value="26px"/>
+            <textBold value="true"/>
+            <textUpperCase value="true"/>
+            <textColor value="0.33716 0.55834 0.0003 1"/>
+        </Profile>
+
+        <Profile name="bankText" extends="fs25_textDefault" with="anchorBottomLeft">
+            <textSize value="20px"/>
+        </Profile>
+
+        <Profile name="bankTextBold" extends="bankText">
+            <textBold value="true"/>
+        </Profile>
+
+        <Profile name="bankMuted" extends="bankText">
+            <textSize value="17px"/>
+            <textColor value="0.61721 0.59062 0.55201 1"/>
+        </Profile>
+
+        <Profile name="bankValue" extends="bankText">
+            <textSize value="26px"/>
+            <textBold value="true"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="bankButton" extends="baseReference" with="anchorBottomLeft">
+            <imageColor value="0.22323 0.40724 0.00368 1"/>
+            <imageFocusedColor value="0.33716 0.55834 0.0003 1"/>
+            <imageHighlightedColor value="0.33716 0.55834 0.0003 1"/>
+            <imageSelectedColor value="0.33716 0.55834 0.0003 1"/>
+            <imageDisabledColor value="0.04231 0.04231 0.04231 1"/>
+            <textSize value="19px"/>
+            <textBold value="true"/>
+            <textUpperCase value="true"/>
+            <textAlignment value="center"/>
+            <textColor value="0.89627 0.92158 0.81485 1"/>
+            <textFocusedColor value="1 1 1 1"/>
+            <textHighlightedColor value="1 1 1 1"/>
+            <textSelectedColor value="1 1 1 1"/>
+            <textDisabledColor value="0.3 0.3 0.3 1"/>
+        </Profile>
+
+        <Profile name="bankButtonGhost" extends="bankButton">
+            <imageColor value="0.20156 0.20156 0.20156 1"/>
+            <imageFocusedColor value="0.30 0.30 0.30 1"/>
+            <imageHighlightedColor value="0.30 0.30 0.30 1"/>
+            <imageSelectedColor value="0.30 0.30 0.30 1"/>
+            <textSize value="28px"/>
+        </Profile>
+    </Profiles>
+</GUIProfiles>

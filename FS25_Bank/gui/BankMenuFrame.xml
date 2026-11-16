@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!-- Aba "Banco" do menu ESC. Perfis fs25_menu* sao do jogo; bank* sao do mod (gui/guiProfiles.xml). -->
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+    <GuiElement profile="fs25_menuContainer">
+
+        <GuiElement profile="fs25_menuHeaderPanel">
+            <Bitmap profile="fs25_menuHeaderIconBg">
+                <Bitmap profile="fs25_menuHeaderIcon"/>
+            </Bitmap>
+            <Text profile="fs25_menuHeaderTitle" text="$l10n_bank_title"/>
+        </GuiElement>
+
+        <GuiElement profile="bankPage">
+
+            <!-- Resumo da conta -->
+            <Bitmap profile="bankCard" position="0px 494px" size="1312px 80px"/>
+            <Bitmap profile="bankAccentBar" position="0px 494px" size="6px 80px"/>
+            <Text profile="bankTextBold" id="balanceText" position="30px 536px" size="560px 28px"/>
+            <Text profile="bankText" id="limitText" position="30px 504px" size="560px 28px"/>
+            <Text profile="bankText" id="debtText" position="640px 536px" size="320px 28px"/>
+            <Text profile="bankText" id="scoreText" position="640px 504px" size="320px 28px"/>
+            <Text profile="bankText" id="rateText" position="1000px 536px" size="290px 28px"/>
+
+            <!-- Novo emprestimo -->
+            <Text profile="bankSection" position="0px 445px" size="600px 34px" text="$l10n_bank_new_loan"/>
+            <Bitmap profile="bankCard" position="0px 250px" size="1312px 185px"/>
+
+            <Text profile="bankText" position="30px 372px" size="200px 34px" text="$l10n_bank_amount"/>
+            <Button profile="bankButtonGhost" id="amountDownBtn" position="240px 366px" size="48px 46px" text="$l10n_bank_minus" onClick="onClickAmountDown"/>
+            <Text profile="bankValue" id="amountText" position="296px 372px" size="240px 34px"/>
+            <Button profile="bankButtonGhost" id="amountUpBtn" position="544px 366px" size="48px 46px" text="$l10n_bank_plus" onClick="onClickAmountUp"/>
+
+            <Text profile="bankText" position="30px 302px" size="200px 34px" text="$l10n_bank_term"/>
+            <Button profile="bankButtonGhost" id="termDownBtn" position="240px 296px" size="48px 46px" text="$l10n_bank_minus" onClick="onClickTermDown"/>
+            <Text profile="bankValue" id="termText" position="296px 302px" size="240px 34px"/>
+            <Button profile="bankButtonGhost" id="termUpBtn" position="544px 296px" size="48px 46px" text="$l10n_bank_plus" onClick="onClickTermUp"/>
+
+            <Text profile="bankMuted" id="installmentText" position="30px 262px" size="1000px 28px"/>
+            <Button profile="bankButton" id="borrowButton" position="980px 300px" size="300px 80px" text="$l10n_bank_borrow" onClick="onClickBorrow"/>
+
+            <!-- Meus emprestimos -->
+            <Text profile="bankSection" position="0px 208px" size="600px 34px" text="$l10n_bank_my_loans"/>
+            <Bitmap profile="bankCard" position="0px 0px" size="1312px 200px"/>
+            <Text profile="bankText" id="loanText1" position="30px 160px" size="1080px 34px"/>
+            <Button profile="bankButton" id="payoffBtn1" position="1130px 160px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff1"/>
+            <Text profile="bankText" id="loanText2" position="30px 122px" size="1080px 34px"/>
+            <Button profile="bankButton" id="payoffBtn2" position="1130px 122px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff2"/>
+            <Text profile="bankText" id="loanText3" position="30px 84px" size="1080px 34px"/>
+            <Button profile="bankButton" id="payoffBtn3" position="1130px 84px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff3"/>
+            <Text profile="bankText" id="loanText4" position="30px 46px" size="1080px 34px"/>
+            <Button profile="bankButton" id="payoffBtn4" position="1130px 46px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff4"/>
+            <Text profile="bankText" id="loanText5" position="30px 8px" size="1080px 34px"/>
+            <Button profile="bankButton" id="payoffBtn5" position="1130px 8px" size="150px 34px" text="$l10n_bank_payoff" onClick="onClickPayoff5"/>
+        </GuiElement>
+    </GuiElement>
+</GUI>
